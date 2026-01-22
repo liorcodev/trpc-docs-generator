@@ -1,0 +1,51 @@
+{
+  "name": "trpc-docs-generator",
+  "version": "0.5.0",
+  "author": "Lior Cohen",
+  "homepage": "https://github.com/liorcodev/trpc-docs-generator#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/liorcodev/trpc-docs-generator.git"
+  },
+  "bugs": {
+    "url": "https://github.com/liorcodev/trpc-docs-generator/issues"
+  },
+  "license": "MIT",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "devDependencies": {
+    "@trpc/server": "^11.8.1",
+    "@types/node": "^25.0.10",
+    "sharp": "^0.34.5",
+    "typescript": "^5.9.3"
+  },
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "description": "Generate beautiful, fully interactive tRPC API documentation with a built-in testing playground. Test endpoints directly in the browser, manage headers, auto-fill requests, and see live responses - all with zero configuration.",
+  "files": [
+    "dist",
+    "assets",
+    "README.md",
+    "LICENSE"
+  ],
+  "keywords": [
+    "trpc",
+    "documentation",
+    "api",
+    "docs",
+    "generator",
+    "typescript",
+    "zod"
+  ],
+  "scripts": {
+    "prebuild": "node scripts/build-inline.js",
+    "build": "tsc",
+    "prepublishOnly": "npm run build"
+  },
+  "type": "module",
+  "types": "./dist/index.d.ts"
+}
