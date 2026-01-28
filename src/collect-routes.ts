@@ -1,7 +1,7 @@
-import type { AnyRouter, AnyProcedure, ProcedureType } from "@trpc/server";
+import type { AnyRouter, AnyProcedure, ProcedureType } from '@trpc/server';
 /**
  * Complete information about a single tRPC route/procedure
- */export type RouteInfo = {
+ */ export type RouteInfo = {
   path: string;
   type: ProcedureType;
   meta?: any;
@@ -44,7 +44,7 @@ function generateTypeScriptFromSchema(schemaJson: string): string | undefined {
 }
 
 function extractOptionalFields(
-  schemaJson: string,
+  schemaJson: string
 ): { name: string; example: string }[] | undefined {
   try {
     const schema = JSON.parse(schemaJson);
@@ -54,13 +54,10 @@ function extractOptionalFields(
   }
 }
 
-function getOptionalFields(
-  schema: any,
-  depth: number = 0,
-): { name: string; example: string }[] {
+function getOptionalFields(schema: any, depth: number = 0): { name: string; example: string }[] {
   const optionalFields: { name: string; example: string }[] = [];
 
-  if (!schema || typeof schema !== "object") return optionalFields;
+  if (!schema || typeof schema !== 'object') return optionalFields;
 
   // Handle allOf
   if (schema.allOf && Array.isArray(schema.allOf)) {
@@ -68,7 +65,7 @@ function getOptionalFields(
     const allRequired = new Set<string>();
 
     for (const subSchema of schema.allOf) {
-      if (subSchema.type === "object" && subSchema.properties) {
+      if (subSchema.type === 'object' && subSchema.properties) {
         Object.assign(allProps, subSchema.properties);
       }
       if (subSchema.required) {
@@ -85,7 +82,7 @@ function getOptionalFields(
     return optionalFields;
   }
 
-  if (schema.type === "object" && schema.properties) {
+  if (schema.type === 'object' && schema.properties) {
     const required = new Set(schema.required || []);
 
     for (const [key, propSchema] of Object.entries(schema.properties)) {
@@ -102,16 +99,16 @@ function getOptionalFields(
 function generateJSONExample(
   schema: any,
   depth: number = 0,
-  includeOptional: boolean = false,
+  includeOptional: boolean = false
 ): string {
-  if (!schema || typeof schema !== "object") return '"value"';
+  if (!schema || typeof schema !== 'object') return '"value"';
 
-  const indent = "  ".repeat(depth);
-  const nextIndent = "  ".repeat(depth + 1);
+  const indent = '  '.repeat(depth);
+  const nextIndent = '  '.repeat(depth + 1);
 
   // Handle const (Zod literals)
   if (schema.const !== undefined) {
-    if (typeof schema.const === "string") {
+    if (typeof schema.const === 'string') {
       return `"${schema.const}"`;
     }
     return JSON.stringify(schema.const);
@@ -122,7 +119,7 @@ function generateJSONExample(
     const objects: any[] = [];
 
     for (const subSchema of schema.allOf) {
-      if (subSchema.type === "object" && subSchema.properties) {
+      if (subSchema.type === 'object' && subSchema.properties) {
         objects.push(subSchema);
       }
     }
@@ -145,16 +142,12 @@ function generateJSONExample(
         const isRequired = allRequired.has(key);
         // Only include optional fields if requested
         if (isRequired || includeOptional) {
-          const propValue = generateJSONExample(
-            propSchema as any,
-            depth + 1,
-            includeOptional,
-          );
+          const propValue = generateJSONExample(propSchema as any, depth + 1, includeOptional);
           props.push(`${nextIndent}"${key}": ${propValue}`);
         }
       }
 
-      return `{\n${props.join(",\n")}\n${indent}}`;
+      return `{\n${props.join(',\n')}\n${indent}}`;
     }
   }
 
@@ -168,9 +161,20 @@ function generateJSONExample(
   }
 
   switch (schema.type) {
-    case "object": {
+    case 'object': {
+      // Handle z.record() - uses additionalProperties instead of properties
+      if (schema.additionalProperties && !schema.properties) {
+        const keyExample = schema.propertyNames?.type === 'string' ? 'key' : 'key';
+        const valueExample = generateJSONExample(
+          schema.additionalProperties,
+          depth + 1,
+          includeOptional
+        );
+        return `{\n${nextIndent}"${keyExample}": ${valueExample}\n${indent}}`;
+      }
+
       if (!schema.properties || Object.keys(schema.properties).length === 0) {
-        return "{}";
+        return '{}';
       }
 
       const required = new Set(schema.required || []);
@@ -180,46 +184,38 @@ function generateJSONExample(
         const isRequired = required.has(key);
         // Only include optional fields if requested
         if (isRequired || includeOptional) {
-          const propValue = generateJSONExample(
-            propSchema as any,
-            depth + 1,
-            includeOptional,
-          );
+          const propValue = generateJSONExample(propSchema as any, depth + 1, includeOptional);
           props.push(`${nextIndent}"${key}": ${propValue}`);
         }
       }
 
-      return `{\n${props.join(",\n")}\n${indent}}`;
+      return `{\n${props.join(',\n')}\n${indent}}`;
     }
 
-    case "array": {
+    case 'array': {
       if (schema.items) {
-        const itemValue = generateJSONExample(
-          schema.items,
-          depth + 1,
-          includeOptional,
-        );
+        const itemValue = generateJSONExample(schema.items, depth + 1, includeOptional);
         return `[${itemValue}]`;
       }
-      return "[]";
+      return '[]';
     }
 
-    case "string": {
+    case 'string': {
       if (schema.enum && schema.enum.length > 0) {
         return `"${schema.enum[0]}"`;
       }
       return '"string"';
     }
 
-    case "number":
-    case "integer":
-      return "0";
+    case 'number':
+    case 'integer':
+      return '0';
 
-    case "boolean":
-      return "true";
+    case 'boolean':
+      return 'true';
 
-    case "null":
-      return "null";
+    case 'null':
+      return 'null';
 
     default:
       return '"value"';
@@ -233,14 +229,14 @@ function generateJSONExample(
  * @returns TypeScript type definition string
  */
 function generateTypeScriptExample(schema: any, depth: number = 0): string {
-  if (!schema || typeof schema !== "object") return "any";
+  if (!schema || typeof schema !== 'object') return 'any';
 
-  const indent = "  ".repeat(depth);
-  const nextIndent = "  ".repeat(depth + 1);
+  const indent = '  '.repeat(depth);
+  const nextIndent = '  '.repeat(depth + 1);
 
   // Handle const (Zod literals)
   if (schema.const !== undefined) {
-    if (typeof schema.const === "string") {
+    if (typeof schema.const === 'string') {
       return `"${schema.const}"`;
     }
     return JSON.stringify(schema.const);
@@ -253,7 +249,7 @@ function generateTypeScriptExample(schema: any, depth: number = 0): string {
 
     // Separate object schemas from other schemas (like unions)
     for (const subSchema of schema.allOf) {
-      if (subSchema.type === "object" && subSchema.properties) {
+      if (subSchema.type === 'object' && subSchema.properties) {
         objects.push(subSchema);
       } else {
         // Could be anyOf, oneOf, or other non-object schemas
@@ -279,52 +275,50 @@ function generateTypeScriptExample(schema: any, depth: number = 0): string {
       const props: string[] = [];
       for (const [key, propSchema] of Object.entries(allProps)) {
         const isRequired = allRequired.has(key);
-        const propType = generateTypeScriptExample(
-          propSchema as any,
-          depth + 1,
-        );
-        const optionalMark = isRequired ? "" : "?";
+        const propType = generateTypeScriptExample(propSchema as any, depth + 1);
+        const optionalMark = isRequired ? '' : '?';
         props.push(`${nextIndent}${key}${optionalMark}: ${propType}`);
       }
 
-      const objectType = `{\n${props.join("\n")}\n${indent}}`;
+      const objectType = `{\n${props.join('\n')}\n${indent}}`;
 
       // If there are non-object schemas (like unions), intersect with them
       if (nonObjects.length > 0) {
-        const nonObjectTypes = nonObjects.map((s) =>
-          generateTypeScriptExample(s, depth),
-        );
-        return `${objectType} & (${nonObjectTypes.join(" & ")})`;
+        const nonObjectTypes = nonObjects.map(s => generateTypeScriptExample(s, depth));
+        return `${objectType} & (${nonObjectTypes.join(' & ')})`;
       }
 
       return objectType;
     } else if (nonObjects.length > 0) {
       // Only non-object schemas in the intersection
-      const types = nonObjects.map((s) => generateTypeScriptExample(s, depth));
-      return types.join(" & ");
+      const types = nonObjects.map(s => generateTypeScriptExample(s, depth));
+      return types.join(' & ');
     }
   }
 
   // Handle oneOf (unions)
   if (schema.oneOf && Array.isArray(schema.oneOf) && schema.oneOf.length > 0) {
-    const types = schema.oneOf.map((s: any) =>
-      generateTypeScriptExample(s, depth),
-    );
-    return types.join(" | ");
+    const types = schema.oneOf.map((s: any) => generateTypeScriptExample(s, depth));
+    return types.join(' | ');
   }
 
   // Handle anyOf (unions - used by z.union in Zod)
   if (schema.anyOf && Array.isArray(schema.anyOf) && schema.anyOf.length > 0) {
-    const types = schema.anyOf.map((s: any) =>
-      generateTypeScriptExample(s, depth),
-    );
-    return types.join(" | ");
+    const types = schema.anyOf.map((s: any) => generateTypeScriptExample(s, depth));
+    return types.join(' | ');
   }
 
   switch (schema.type) {
-    case "object": {
+    case 'object': {
+      // Handle z.record() - uses additionalProperties instead of properties
+      if (schema.additionalProperties && !schema.properties) {
+        const keyType = schema.propertyNames?.type === 'string' ? 'string' : 'string';
+        const valueType = generateTypeScriptExample(schema.additionalProperties, depth);
+        return `Record<${keyType}, ${valueType}>`;
+      }
+
       if (!schema.properties || Object.keys(schema.properties).length === 0) {
-        return "{}";
+        return '{}';
       }
 
       const required = new Set(schema.required || []);
@@ -332,49 +326,46 @@ function generateTypeScriptExample(schema: any, depth: number = 0): string {
 
       for (const [key, propSchema] of Object.entries(schema.properties)) {
         const isRequired = required.has(key);
-        const propType = generateTypeScriptExample(
-          propSchema as any,
-          depth + 1,
-        );
-        const optionalMark = isRequired ? "" : "?";
+        const propType = generateTypeScriptExample(propSchema as any, depth + 1);
+        const optionalMark = isRequired ? '' : '?';
         props.push(`${nextIndent}${key}${optionalMark}: ${propType}`);
       }
 
-      return `{\n${props.join("\n")}\n${indent}}`;
+      return `{\n${props.join('\n')}\n${indent}}`;
     }
 
-    case "array": {
+    case 'array': {
       if (schema.items) {
         const itemType = generateTypeScriptExample(schema.items, depth);
         // If item is an object, keep it compact
-        if (itemType.includes("\n")) {
+        if (itemType.includes('\n')) {
           // Multi-line object in array
           return `Array<${itemType}>`;
         }
         return `${itemType}[]`;
       }
-      return "any[]";
+      return 'any[]';
     }
 
-    case "string": {
+    case 'string': {
       if (schema.enum && schema.enum.length > 0) {
-        return schema.enum.map((v: string) => `"${v}"`).join(" | ");
+        return schema.enum.map((v: string) => `"${v}"`).join(' | ');
       }
-      return "string";
+      return 'string';
     }
 
-    case "number":
-    case "integer":
-      return "number";
+    case 'number':
+    case 'integer':
+      return 'number';
 
-    case "boolean":
-      return "boolean";
+    case 'boolean':
+      return 'boolean';
 
-    case "null":
-      return "null";
+    case 'null':
+      return 'null';
 
     default:
-      return "any";
+      return 'any';
   }
 }
 
@@ -387,16 +378,15 @@ function zodSchemaToString(schema: unknown): string | undefined {
   if (!schema) return undefined;
   try {
     // Check if it has the toJSONSchema method (Zod v4+)
-    if (schema && typeof schema === "object" && "toJSONSchema" in schema) {
-      const toJSONSchema = (schema as { toJSONSchema: () => unknown })
-        .toJSONSchema;
-      if (typeof toJSONSchema === "function") {
+    if (schema && typeof schema === 'object' && 'toJSONSchema' in schema) {
+      const toJSONSchema = (schema as { toJSONSchema: () => unknown }).toJSONSchema;
+      if (typeof toJSONSchema === 'function') {
         const jsonSchema = toJSONSchema();
         return JSON.stringify(jsonSchema, null, 2);
       }
     }
   } catch (error) {
-    console.error("Error converting schema:", error);
+    console.error('Error converting schema:', error);
     return undefined;
   }
   return undefined;
@@ -413,7 +403,7 @@ function traverseRouter(router: AnyRouter): RouteInfo[] {
   // Access the procedures object directly (tRPC flattens all procedures)
   const procedures = router._def.procedures as Record<string, AnyProcedure>;
 
-  if (procedures && typeof procedures === "object") {
+  if (procedures && typeof procedures === 'object') {
     for (const [path, procedure] of Object.entries(procedures)) {
       const procDef = procedure._def as {
         type?: ProcedureType;
@@ -423,40 +413,28 @@ function traverseRouter(router: AnyRouter): RouteInfo[] {
         $types?: { input?: unknown; output?: unknown };
       };
 
-      const type: ProcedureType = procDef.type || "query";
+      const type: ProcedureType = procDef.type || 'query';
 
       const inputSchema =
         procDef.inputs && procDef.inputs.length > 0
           ? zodSchemaToString(procDef.inputs[procDef.inputs.length - 1])
           : undefined;
 
-      const outputSchema = procDef.output
-        ? zodSchemaToString(procDef.output)
-        : undefined;
+      const outputSchema = procDef.output ? zodSchemaToString(procDef.output) : undefined;
 
       // Auto-generate examples from schemas (required fields only for input)
-      const inputExample = inputSchema
-        ? generateExampleFromSchema(inputSchema)
-        : undefined;
-      const outputExample = outputSchema
-        ? generateExampleFromSchema(outputSchema)
-        : undefined;
+      const inputExample = inputSchema ? generateExampleFromSchema(inputSchema) : undefined;
+      const outputExample = outputSchema ? generateExampleFromSchema(outputSchema) : undefined;
 
       // Auto-generate TypeScript type representations
-      const inputTypeScript = inputSchema
-        ? generateTypeScriptFromSchema(inputSchema)
-        : undefined;
+      const inputTypeScript = inputSchema ? generateTypeScriptFromSchema(inputSchema) : undefined;
       const outputTypeScript = outputSchema
         ? generateTypeScriptFromSchema(outputSchema)
         : undefined;
 
       // Extract optional fields
-      const inputOptionalFields = inputSchema
-        ? extractOptionalFields(inputSchema)
-        : undefined;
-      const outputOptionalFields = outputSchema
-        ? extractOptionalFields(outputSchema)
-        : undefined;
+      const inputOptionalFields = inputSchema ? extractOptionalFields(inputSchema) : undefined;
+      const outputOptionalFields = outputSchema ? extractOptionalFields(outputSchema) : undefined;
 
       routes.push({
         path,
@@ -469,7 +447,7 @@ function traverseRouter(router: AnyRouter): RouteInfo[] {
         inputTypeScript,
         outputTypeScript,
         inputOptionalFields,
-        outputOptionalFields,
+        outputOptionalFields
       });
     }
   }

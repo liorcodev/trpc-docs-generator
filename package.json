@@ -1,6 +1,6 @@
 {
   "name": "trpc-docs-generator",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "author": "Lior Cohen",
   "homepage": "https://github.com/liorcodev/trpc-docs-generator#readme",
   "repository": {
@@ -14,8 +14,9 @@
   "main": "./dist/index.js",
   "module": "./dist/index.js",
   "devDependencies": {
-    "@trpc/server": "^11.8.1",
+    "@trpc/server": "^11.9.0",
     "@types/node": "^25.0.10",
+    "prettier": "^3.8.1",
     "sharp": "^0.34.5",
     "typescript": "^5.9.3"
   },
@@ -42,6 +43,7 @@
     "zod"
   ],
   "scripts": {
+    "format": "prettier --write .",
     "prebuild": "node scripts/build-inline.js",
     "build": "tsc",
     "prepublishOnly": "npm run build"

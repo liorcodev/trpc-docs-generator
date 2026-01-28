@@ -34,7 +34,7 @@ document.querySelectorAll('.route-header')?.forEach(header => {
 
 // Smooth scroll for sidebar links
 document.querySelectorAll('.sidebar-link').forEach(link => {
-  link.addEventListener('click', (e) => {
+  link.addEventListener('click', e => {
     e.preventDefault();
     const target = document.querySelector(link.getAttribute('href'));
     if (target) {
@@ -98,14 +98,14 @@ function saveBaseUrl() {
 }
 
 // Close modal on ESC key
-document.addEventListener('keydown', (e) => {
+document.addEventListener('keydown', e => {
   if (e.key === 'Escape') {
     closeConfigModal();
   }
 });
 
 // Close modal on backdrop click
-document.getElementById('configModal')?.addEventListener('click', (e) => {
+document.getElementById('configModal')?.addEventListener('click', e => {
   if (e.target.id === 'configModal') {
     closeConfigModal();
   }
@@ -136,7 +136,7 @@ function removeHeader(button) {
     headerRow.remove();
   } else {
     // Clear the inputs instead of removing if it's the last one
-    headerRow.querySelectorAll('.header-input').forEach(input => input.value = '');
+    headerRow.querySelectorAll('.header-input').forEach(input => (input.value = ''));
   }
 }
 
@@ -312,7 +312,6 @@ Body: ${method === 'POST' ? JSON.stringify(inputData, null, 2) : 'N/A (sent as q
       </div>
     `;
     responseContainer.style.display = 'block';
-
   } catch (error) {
     responseContainer.innerHTML = `
       <div class="response-status error">
@@ -340,7 +339,7 @@ window.removeHeader = removeHeader;
 window.saveHeaders = saveHeaders;
 window.loadHeaders = loadHeaders;
 window.testEndpoint = testEndpoint;
-window.escapeHtml = function(str) {
+window.escapeHtml = function (str) {
   const div = document.createElement('div');
   div.textContent = str;
   return div.innerHTML;
@@ -352,7 +351,7 @@ window.closeConfigModal = closeConfigModal;
 window.saveBaseUrl = saveBaseUrl;
 
 // Add optional field to JSON input
-window.addOptionalField = function(routeId, fieldName, fieldExample, badgeElement) {
+window.addOptionalField = function (routeId, fieldName, fieldExample, badgeElement) {
   const inputField = document.getElementById('input-' + routeId);
   if (!inputField) return;
 

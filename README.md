@@ -34,7 +34,10 @@
 
 ## Why tRPC Docs Generator?
 
-Building great APIs is one thing documenting AND testing them shouldn't be hard. **tRPC Docs Generator** automatically creates stunning, **fully interactive** documentation from your tRPC router with zero configuration. Not only does it document your API, but it also provides a **built-in API testing playground** right in the browser!
+Building great APIs is one thing documenting AND testing them shouldn't be hard. **tRPC Docs
+Generator** automatically creates stunning, **fully interactive** documentation from your tRPC
+router with zero configuration. Not only does it document your API, but it also provides a
+**built-in API testing playground** right in the browser!
 
 - ⚡️ **Zero Config** - Works out of the box with any tRPC v11 router
 - 🧪 **Interactive Testing** - **Test endpoints directly in the browser with live fetch requests**
@@ -86,7 +89,7 @@ Powered by Zod's `toJSONSchema()` method, the generator automatically:
 - Generates realistic JSON examples with proper types
 - Creates TypeScript type definitions
 - Identifies optional vs required fields
-- Handles complex types (unions, intersections, arrays, enums)
+- Handles complex types (unions, intersections, arrays, enums, records)
 
 ### 🎨 Modern, Beautiful UI
 
@@ -126,19 +129,19 @@ npm install trpc-docs-generator
 ### Basic Usage
 
 ```typescript
-import { collectRoutes, generateDocsHtml } from "trpc-docs-generator";
-import { appRouter } from "./router";
+import { collectRoutes, generateDocsHtml } from 'trpc-docs-generator';
+import { appRouter } from './router';
 
 // 1. Collect route information from your router
 const routes = collectRoutes(appRouter);
 
 // 2. Generate HTML documentation
 const html = generateDocsHtml(routes, {
-  title: "My API Documentation",
+  title: 'My API Documentation'
 });
 
 // 3. Serve it however you like
-app.get("/docs", (req, res) => {
+app.get('/docs', (req, res) => {
   res.send(html);
 });
 ```
@@ -146,8 +149,8 @@ app.get("/docs", (req, res) => {
 ### Example Router
 
 ```typescript
-import { initTRPC } from "@trpc/server";
-import { z } from "zod";
+import { initTRPC } from '@trpc/server';
+import { z } from 'zod';
 
 const t = initTRPC.meta<RouteMeta>().create();
 
@@ -155,18 +158,18 @@ export const appRouter = t.router({
   // Query with metadata
   getUser: t.procedure
     .meta({
-      name: "Get User",
-      description: "Retrieve user information by ID",
-      tags: ["Users"],
-      auth: true,
+      name: 'Get User',
+      description: 'Retrieve user information by ID',
+      tags: ['Users'],
+      auth: true
     })
     .input(z.object({ userId: z.string() }))
     .output(
       z.object({
         id: z.string(),
         name: z.string(),
-        email: z.string().email(),
-      }),
+        email: z.string().email()
+      })
     )
     .query(async ({ input }) => {
       // Implementation
@@ -175,29 +178,29 @@ export const appRouter = t.router({
   // Mutation example
   createPost: t.procedure
     .meta({
-      name: "Create Post",
-      description: "Create a new blog post",
-      tags: ["Posts"],
+      name: 'Create Post',
+      description: 'Create a new blog post',
+      tags: ['Posts'],
       auth: true,
-      roles: ["admin", "editor"],
+      roles: ['admin', 'editor']
     })
     .input(
       z.object({
         title: z.string(),
         content: z.string(),
-        published: z.boolean().optional(),
-      }),
+        published: z.boolean().optional()
+      })
     )
     .output(
       z.object({
         id: z.string(),
         title: z.string(),
-        createdAt: z.string(),
-      }),
+        createdAt: z.string()
+      })
     )
     .mutation(async ({ input }) => {
       // Implementation
-    }),
+    })
 });
 ```
 
@@ -210,9 +213,11 @@ Every endpoint in the generated docs includes a **fully functional testing panel
 ### How to Test Endpoints
 
 1. **Open the docs** - Navigate to your `/docs` endpoint
-2. **Configure base URL** - Click the gear icon (top-right) and enter your tRPC endpoint (e.g., `http://127.0.0.1:8787/trpc` see <a href="#troubleshooting">Troubleshooting</a>)
+2. **Configure base URL** - Click the gear icon (top-right) and enter your tRPC endpoint (e.g.,
+   `http://127.0.0.1:8787/trpc` see <a href="#troubleshooting">Troubleshooting</a>)
 3. **Click any endpoint** - Expand the route card to see the testing panel
-4. **Edit the request** - Pre-filled JSON is ready, modify as needed or click badges to add optional fields
+4. **Edit the request** - Pre-filled JSON is ready, modify as needed or click badges to add optional
+   fields
 5. **Add headers** (optional) - Add auth tokens or custom headers
 6. **Click "Send Request"** - See real-time response!
 
@@ -241,16 +246,16 @@ The testing panel shows:
 ### Express.js
 
 ```typescript
-import express from "express";
-import { collectRoutes, generateDocsHtml } from "trpc-docs-generator";
-import { appRouter } from "./router";
+import express from 'express';
+import { collectRoutes, generateDocsHtml } from 'trpc-docs-generator';
+import { appRouter } from './router';
 
 const app = express();
 
-app.get("/docs", (req, res) => {
+app.get('/docs', (req, res) => {
   const routes = collectRoutes(appRouter);
   const html = generateDocsHtml(routes, {
-    title: "My API Docs",
+    title: 'My API Docs'
   });
   res.send(html);
 });
@@ -262,17 +267,17 @@ app.listen(3000);
 
 ```typescript
 // app/docs/route.ts
-import { collectRoutes, generateDocsHtml } from "trpc-docs-generator";
-import { appRouter } from "@/server/router";
+import { collectRoutes, generateDocsHtml } from 'trpc-docs-generator';
+import { appRouter } from '@/server/router';
 
 export async function GET() {
   const routes = collectRoutes(appRouter);
   const html = generateDocsHtml(routes, {
-    title: "API Documentation",
+    title: 'API Documentation'
   });
 
   return new Response(html, {
-    headers: { "Content-Type": "text/html" },
+    headers: { 'Content-Type': 'text/html' }
   });
 }
 
@@ -283,32 +288,32 @@ export async function GET() {
 ### Cloudflare Workers
 
 ```typescript
-import { fetchRequestHandler } from "@trpc/server/adapters/fetch";
-import { collectRoutes, generateDocsHtml } from "trpc-docs-generator";
-import { appRouter } from "./router";
+import { fetchRequestHandler } from '@trpc/server/adapters/fetch';
+import { collectRoutes, generateDocsHtml } from 'trpc-docs-generator';
+import { appRouter } from './router';
 
 export default {
   async fetch(request: Request): Promise<Response> {
     const url = new URL(request.url);
 
     // Serve docs
-    if (url.pathname === "/docs") {
+    if (url.pathname === '/docs') {
       const routes = collectRoutes(appRouter);
       const html = generateDocsHtml(routes, {
-        title: "API Documentation",
+        title: 'API Documentation'
       });
       return new Response(html, {
-        headers: { "Content-Type": "text/html" },
+        headers: { 'Content-Type': 'text/html' }
       });
     }
 
     // Handle tRPC requests
     return fetchRequestHandler({
-      endpoint: "/trpc",
+      endpoint: '/trpc',
       req: request,
-      router: appRouter,
+      router: appRouter
     });
-  },
+  }
 };
 ```
 
@@ -319,24 +324,29 @@ export default {
 ### Testing Panel Issues
 
 **"Failed to fetch" or CORS errors**:
+
 - Ensure the base URL hostname matches exactly how you're accessing the docs
-    - If docs are at `http://localhost:3000/docs`, use `http://localhost:3000/trpc`
-    - Don't mix `localhost` and `127.0.0.1` - this causes origin mismatch
+  - If docs are at `http://localhost:3000/docs`, use `http://localhost:3000/trpc`
+  - Don't mix `localhost` and `127.0.0.1` - this causes origin mismatch
 - Verify your tRPC server has CORS configured to allow requests from the docs origin
 - Check browser console for specific CORS error messages
 
 **404 Not Found**:
+
 - Verify the complete mount path is included in base URL
-    - If tRPC is at `/api/trpc`, use `http://localhost:3000/api/trpc`, not just `http://localhost:3000`
+  - If tRPC is at `/api/trpc`, use `http://localhost:3000/api/trpc`, not just
+    `http://localhost:3000`
 - Ensure your tRPC server is actually running
 - Test the endpoint directly with curl or Postman to verify it works
 
 **Base URL not saving**:
+
 - Check browser console for localStorage errors
 - Ensure you're using a modern browser with localStorage support
 - Try clearing browser cache and reconfiguring
 
 **Invalid JSON errors**:
+
 - Ensure proper JSON syntax with double quotes for keys and string values
 - Use the browser's JSON formatter or validator to check your input
 - The testing panel validates JSON before sending
@@ -410,9 +420,9 @@ type RouteMeta = {
 ### Full Featured Router
 
 ```typescript
-import { initTRPC } from "@trpc/server";
-import { z } from "zod";
-import type { RouteMeta } from "trpc-docs-generator";
+import { initTRPC } from '@trpc/server';
+import { z } from 'zod';
+import type { RouteMeta } from 'trpc-docs-generator';
 
 const t = initTRPC.meta<RouteMeta>().create();
 
@@ -420,29 +430,29 @@ export const appRouter = t.router({
   // Public endpoint
   health: t.procedure
     .meta({
-      name: "Health Check",
-      description: "Check if the API is running",
-      tags: ["System"],
+      name: 'Health Check',
+      description: 'Check if the API is running',
+      tags: ['System']
     })
-    .output(z.object({ status: z.literal("ok") }))
-    .query(() => ({ status: "ok" as const })),
+    .output(z.object({ status: z.literal('ok') }))
+    .query(() => ({ status: 'ok' as const })),
 
   // Protected endpoint
   users: t.router({
     list: t.procedure
       .meta({
-        name: "List Users",
-        description: "Get a paginated list of users",
-        tags: ["Users"],
+        name: 'List Users',
+        description: 'Get a paginated list of users',
+        tags: ['Users'],
         auth: true,
-        roles: ["admin"],
+        roles: ['admin']
       })
       .input(
         z.object({
           page: z.number().min(1).default(1),
           limit: z.number().min(1).max(100).default(10),
-          search: z.string().optional(),
-        }),
+          search: z.string().optional()
+        })
       )
       .output(
         z.object({
@@ -450,13 +460,13 @@ export const appRouter = t.router({
             z.object({
               id: z.string(),
               name: z.string(),
-              email: z.string().email(),
-            }),
+              email: z.string().email()
+            })
           ),
           total: z.number(),
           page: z.number(),
-          totalPages: z.number(),
-        }),
+          totalPages: z.number()
+        })
       )
       .query(async ({ input }) => {
         // Implementation
@@ -465,24 +475,24 @@ export const appRouter = t.router({
     // Deprecated endpoint
     getByEmail: t.procedure
       .meta({
-        name: "Get User by Email",
-        description: "Retrieve user by email address",
-        tags: ["Users"],
+        name: 'Get User by Email',
+        description: 'Retrieve user by email address',
+        tags: ['Users'],
         deprecated: true,
-        auth: true,
+        auth: true
       })
       .input(z.object({ email: z.string().email() }))
       .output(
         z.object({
           id: z.string(),
           name: z.string(),
-          email: z.string(),
-        }),
+          email: z.string()
+        })
       )
       .query(async ({ input }) => {
         // Implementation
-      }),
-  }),
+      })
+  })
 });
 
 export type AppRouter = typeof appRouter;
@@ -496,9 +506,9 @@ The generator handles complex Zod schemas:
 t.procedure.input(
   z.object({
     // Unions
-    status: z.union([z.literal("active"), z.literal("inactive")]),
+    status: z.union([z.literal('active'), z.literal('inactive')]),
     // Enums
-    role: z.enum(["admin", "user", "guest"]),
+    role: z.enum(['admin', 'user', 'guest']),
     // Intersections
     profile: z.object({ name: z.string() }).and(z.object({ age: z.number() })),
     // Arrays
@@ -507,12 +517,14 @@ t.procedure.input(
     settings: z.object({
       notifications: z.object({
         email: z.boolean(),
-        push: z.boolean(),
-      }),
+        push: z.boolean()
+      })
     }),
-    // Optional fields
-    metadata: z.record(z.string()).optional(),
-  }),
+    // Records (key-value maps)
+    metadata: z.record(z.string(), z.string()).optional()
+    // Alternative: record with any string value
+    // metadata: z.record(z.string()).optional(),
+  })
 );
 ```
 
@@ -520,9 +532,11 @@ t.procedure.input(
 
 ## How It Works
 
-1. **Route Collection** - `collectRoutes()` traverses your tRPC router's internal structure to extract all procedures and their metadata
+1. **Route Collection** - `collectRoutes()` traverses your tRPC router's internal structure to
+   extract all procedures and their metadata
 
-2. **Schema Inference** - Uses Zod's `toJSONSchema()` method (Zod v4+) to convert Zod validators into JSON Schema format
+2. **Schema Inference** - Uses Zod's `toJSONSchema()` method (Zod v4+) to convert Zod validators
+   into JSON Schema format
 
 3. **Example Generation** - Automatically generates:
    - Realistic JSON examples from schemas
@@ -543,11 +557,11 @@ t.procedure.input(
 
 ```typescript
 t.procedure.meta({
-  name: "Create User", // Clear, readable name
-  description: "Creates a new user account with the provided information",
-  tags: ["Users", "Authentication"], // Logical grouping
+  name: 'Create User', // Clear, readable name
+  description: 'Creates a new user account with the provided information',
+  tags: ['Users', 'Authentication'], // Logical grouping
   auth: true, // Show auth requirement
-  roles: ["admin"], // Show role requirements
+  roles: ['admin'] // Show role requirements
 });
 ```
 
@@ -556,7 +570,7 @@ t.procedure.meta({
 ```typescript
 t.procedure.meta({
   deprecated: true,
-  description: "Use users.getById instead",
+  description: 'Use users.getById instead'
 });
 ```
 
@@ -565,14 +579,14 @@ t.procedure.meta({
 ```typescript
 const appRouter = t.router({
   // All auth-related routes
-  login: t.procedure.meta({ tags: ["Authentication"] }),
-  logout: t.procedure.meta({ tags: ["Authentication"] }),
-  register: t.procedure.meta({ tags: ["Authentication"] }),
+  login: t.procedure.meta({ tags: ['Authentication'] }),
+  logout: t.procedure.meta({ tags: ['Authentication'] }),
+  register: t.procedure.meta({ tags: ['Authentication'] }),
 
   // All user-related routes
-  getUser: t.procedure.meta({ tags: ["Users"] }),
-  updateUser: t.procedure.meta({ tags: ["Users"] }),
-  deleteUser: t.procedure.meta({ tags: ["Users"] }),
+  getUser: t.procedure.meta({ tags: ['Users'] }),
+  updateUser: t.procedure.meta({ tags: ['Users'] }),
+  deleteUser: t.procedure.meta({ tags: ['Users'] })
 });
 ```
 
@@ -583,11 +597,7 @@ const appRouter = t.router({
 Fully typed with TypeScript! Import types for better developer experience:
 
 ```typescript
-import type {
-  RouteMeta,
-  RouteInfo,
-  DocsGeneratorOptions,
-} from "trpc-docs-generator";
+import type { RouteMeta, RouteInfo, DocsGeneratorOptions } from 'trpc-docs-generator';
 ```
 
 <br/>

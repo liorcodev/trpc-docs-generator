@@ -2,9 +2,20 @@
 
 All notable changes to this project will be documented in this file.
 
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
-and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project
+adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.1] - 2026-01-28
+
+### Fixed
+
+- **z.record() schema display** - Fixed issue where `z.record(z.string(), z.string())` and other
+  record schemas were incorrectly displayed as `{}` in both TypeScript types and JSON examples
+  - Now properly generates `Record<string, string>` TypeScript notation
+  - Generates sample JSON examples like `{ "key": "string" }`
+  - Supports all record value types (primitives, objects, arrays, etc.)
+  - Root cause: Zod's `toJSONSchema()` converts records using `additionalProperties` instead of
+    `properties`, which wasn't being handled
 
 ## [0.5.0] - 2026-01-22
 
@@ -107,6 +118,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `Fixed` - Bug fixes
 - `Security` - Vulnerability fixes
 
-[Unreleased]: https://github.com/liorcohen/trpc-docs-generator/compare/v0.5.0...HEAD
+[Unreleased]: https://github.com/liorcohen/trpc-docs-generator/compare/v0.5.1...HEAD
+[0.5.1]: https://github.com/liorcohen/trpc-docs-generator/compare/v0.5.0...v0.5.1
 [0.5.0]: https://github.com/liorcohen/trpc-docs-generator/releases/tag/v0.5.0
 [0.1.0]: https://github.com/liorcohen/trpc-docs-generator/releases/tag/v0.1.0

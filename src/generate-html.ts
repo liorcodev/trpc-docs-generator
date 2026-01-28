@@ -1,7 +1,6 @@
-import { RouteInfo } from "./collect-routes";
-import { DocsGeneratorOptions, RouteMeta } from "./types";
-import { getStyles, getScripts, getLogo } from "./assets-inline";
-
+import { RouteInfo } from './collect-routes';
+import { DocsGeneratorOptions, RouteMeta } from './types';
+import { getStyles, getScripts, getLogo } from './assets-inline';
 
 /**
  * Generate beautiful HTML documentation from route information
@@ -9,11 +8,8 @@ import { getStyles, getScripts, getLogo } from "./assets-inline";
  * @param options - Generation options
  * @returns HTML string
  */
-export function generateDocsHtml(
-  routes: RouteInfo[],
-  options: DocsGeneratorOptions = {},
-): string {
-  const { title = "API Documentation" } = options;
+export function generateDocsHtml(routes: RouteInfo[], options: DocsGeneratorOptions = {}): string {
+  const { title = 'API Documentation' } = options;
   const groupedRoutes = groupRoutesByPrefix(routes);
 
   return `<!DOCTYPE html>
@@ -85,17 +81,17 @@ export function generateDocsHtml(
           <div class="sidebar-group-title">${formatGroupName(group)}</div>
           ${groupRoutes
             .map(
-              (route) => `
-            <a href="#${route.path.replace(/\./g, "-")}" class="sidebar-link">
-              ${route.path.split(".").pop()}
+              route => `
+            <a href="#${route.path.replace(/\./g, '-')}" class="sidebar-link">
+              ${route.path.split('.').pop()}
             </a>
-          `,
+          `
             )
-            .join("")}
+            .join('')}
         </div>
-      `,
+      `
         )
-        .join("")}
+        .join('')}
     </nav>
 
     <main class="main-content">
@@ -108,21 +104,21 @@ export function generateDocsHtml(
             <div class="stat-label">Total Endpoints</div>
           </div>
           <div class="stat">
-            <div class="stat-value">${routes.filter((r) => !(r.meta?.docs as RouteMeta)?.auth).length}</div>
+            <div class="stat-value">${routes.filter(r => !(r.meta?.docs as RouteMeta)?.auth).length}</div>
             <div class="stat-label">Public Endpoints</div>
             <div class="stat-breakdown">
-              <span>${routes.filter((r) => !(r.meta?.docs as RouteMeta)?.auth && r.type === "query").length} Queries</span>
+              <span>${routes.filter(r => !(r.meta?.docs as RouteMeta)?.auth && r.type === 'query').length} Queries</span>
               <span>•</span>
-              <span>${routes.filter((r) => !(r.meta?.docs as RouteMeta)?.auth && r.type === "mutation").length} Mutations</span>
+              <span>${routes.filter(r => !(r.meta?.docs as RouteMeta)?.auth && r.type === 'mutation').length} Mutations</span>
             </div>
           </div>
           <div class="stat">
-            <div class="stat-value">${routes.filter((r) => (r.meta?.docs as RouteMeta)?.auth).length}</div>
+            <div class="stat-value">${routes.filter(r => (r.meta?.docs as RouteMeta)?.auth).length}</div>
             <div class="stat-label">Protected Endpoints</div>
             <div class="stat-breakdown">
-              <span>${routes.filter((r) => (r.meta?.docs as RouteMeta)?.auth && r.type === "query").length} Queries</span>
+              <span>${routes.filter(r => (r.meta?.docs as RouteMeta)?.auth && r.type === 'query').length} Queries</span>
               <span>•</span>
-              <span>${routes.filter((r) => (r.meta?.docs as RouteMeta)?.auth && r.type === "mutation").length} Mutations</span>
+              <span>${routes.filter(r => (r.meta?.docs as RouteMeta)?.auth && r.type === 'mutation').length} Mutations</span>
             </div>
           </div>
         </div>
@@ -133,11 +129,11 @@ export function generateDocsHtml(
           ([group, groupRoutes]) => `
         <section class="route-group" id="group-${group}">
           <h2 class="route-group-header">${formatGroupName(group)}</h2>
-          ${groupRoutes.map((route) => generateRouteCard(route)).join("")}
+          ${groupRoutes.map(route => generateRouteCard(route)).join('')}
         </section>
-      `,
+      `
         )
-        .join("")}
+        .join('')}
     </main>
   </div>
 
@@ -157,8 +153,8 @@ function groupRoutesByPrefix(routes: RouteInfo[]): Record<string, RouteInfo[]> {
   const grouped: Record<string, RouteInfo[]> = {};
 
   for (const route of routes) {
-    const parts = route.path.split(".");
-    const prefix = parts.length > 1 ? parts.slice(0, -1).join(".") : "root";
+    const parts = route.path.split('.');
+    const prefix = parts.length > 1 ? parts.slice(0, -1).join('.') : 'root';
 
     if (!grouped[prefix]) {
       grouped[prefix] = [];
@@ -175,16 +171,16 @@ function groupRoutesByPrefix(routes: RouteInfo[]): Record<string, RouteInfo[]> {
  * @returns Formatted group name
  */
 function formatGroupName(group: string): string {
-  if (group === "root") return "Root";
+  if (group === 'root') return 'Root';
   return group
-    .split(".")
-    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-    .join(" › ");
+    .split('.')
+    .map(part => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(' › ');
 }
 
 function generateRouteCard(route: RouteInfo): string {
   const docs = route.meta?.docs as RouteMeta | undefined;
-  const routeId = route.path.replace(/\./g, "-");
+  const routeId = route.path.replace(/\./g, '-');
 
   return `
     <div class="route-card" id="${routeId}">
@@ -192,9 +188,9 @@ function generateRouteCard(route: RouteInfo): string {
         <span class="method-badge method-${route.type}">${route.type}</span>
         <span class="route-path">${route.path}</span>
         <div class="route-tags">
-          ${docs?.auth ? '<span class="tag tag-auth"><span class="iconify" data-icon="mdi:shield-lock" style="vertical-align: -0.125em; margin-right: 0.25rem;"></span>Auth</span>' : ""}
-          ${docs?.deprecated ? '<span class="tag tag-deprecated"><span class="iconify" data-icon="mdi:alert" style="vertical-align: -0.125em; margin-right: 0.25rem;"></span>Deprecated</span>' : ""}
-          ${(docs?.tags || []).map((tag) => `<span class="tag">${tag}</span>`).join("")}
+          ${docs?.auth ? '<span class="tag tag-auth"><span class="iconify" data-icon="mdi:shield-lock" style="vertical-align: -0.125em; margin-right: 0.25rem;"></span>Auth</span>' : ''}
+          ${docs?.deprecated ? '<span class="tag tag-deprecated"><span class="iconify" data-icon="mdi:alert" style="vertical-align: -0.125em; margin-right: 0.25rem;"></span>Deprecated</span>' : ''}
+          ${(docs?.tags || []).map(tag => `<span class="tag">${tag}</span>`).join('')}
         </div>
         <svg class="route-chevron" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M6 9l6 6 6-6"/>
@@ -202,7 +198,7 @@ function generateRouteCard(route: RouteInfo): string {
       </div>
       <div class="route-body">
         <div class="route-body-inner">
-          ${docs?.description ? `<p class="route-description">${docs.description}</p>` : ""}
+          ${docs?.description ? `<p class="route-description">${docs.description}</p>` : ''}
 
           ${
             docs?.auth
@@ -217,14 +213,14 @@ function generateRouteCard(route: RouteInfo): string {
                 (docs?.roles || []).length > 0
                   ? `
                 <div class="roles-list">
-                  ${(docs?.roles || []).map((role) => `<span class="role-badge">${role}</span>`).join(" or ")}
+                  ${(docs?.roles || []).map(role => `<span class="role-badge">${role}</span>`).join(' or ')}
                 </div>
               `
-                  : ""
+                  : ''
               }
             </div>
           `
-              : ""
+              : ''
           }
 
           ${
@@ -237,7 +233,7 @@ function generateRouteCard(route: RouteInfo): string {
               </div>
             </div>
           `
-              : ""
+              : ''
           }
 
           ${
@@ -250,7 +246,7 @@ function generateRouteCard(route: RouteInfo): string {
               </div>
             </div>
           `
-              : ""
+              : ''
           }
 
           <div class="test-panel">
@@ -294,25 +290,24 @@ function generateRouteCard(route: RouteInfo): string {
             <div class="test-section">
               <label class="test-section-label" for="input-${routeId}">Request Body (JSON)</label>
               ${
-                route.inputOptionalFields &&
-                route.inputOptionalFields.length > 0
+                route.inputOptionalFields && route.inputOptionalFields.length > 0
                   ? `
               <div class="optional-fields">
                 <span class="optional-fields-title">Optional fields (click to add):</span>
                 <div>
                   ${route.inputOptionalFields
                     .map(
-                      (field) =>
+                      field =>
                         `<span class="optional-field-badge" onclick="addOptionalField('${routeId}', '${escapeHtml(field.name)}', ${escapeHtml(JSON.stringify(field.example))}, this)">
                       <span class="iconify" data-icon="mdi:plus-circle"></span>
                       ${escapeHtml(field.name)}
-                    </span>`,
+                    </span>`
                     )
-                    .join("")}
+                    .join('')}
                 </div>
               </div>
               `
-                  : ""
+                  : ''
               }
               <textarea 
                 id="input-${routeId}" 
@@ -323,7 +318,7 @@ function generateRouteCard(route: RouteInfo): string {
               </div>
             </div>
             `
-                : ""
+                : ''
             }
 
             <button class="btn-primary" onclick="testEndpoint('${routeId}', '${route.path}', '${route.type}')" id="test-btn-${routeId}">
@@ -346,9 +341,9 @@ function generateRouteCard(route: RouteInfo): string {
  */
 function escapeHtml(str: string): string {
   return str
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;");
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
 }
