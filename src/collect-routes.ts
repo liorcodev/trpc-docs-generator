@@ -204,6 +204,12 @@ function generateJSONExample(
       if (schema.enum && schema.enum.length > 0) {
         return `"${schema.enum[0]}"`;
       }
+      if (schema.format === 'date-time') {
+        return '"2024-01-01T00:00:00.000Z"';
+      }
+      if (schema.format === 'date') {
+        return '"2024-01-01"';
+      }
       return '"string"';
     }
 
@@ -370,7 +376,26 @@ function generateTypeScriptExample(schema: any, depth: number = 0): string {
 }
 
 /**
- * Convert a Zod schema to JSON schema string using Zod v4+ toJSONSchema method
+ * Determine whether a Zod schema node represents a date type.
+ * Works with both Zod v3 (_def.typeName) and Zod v4 (def.type).
+ */
+function isZodDateSchema(zodSchema: unknown): boolean {
+  if (!zodSchema || typeof zodSchema !== 'object') return false;
+  const s = zodSchema as Record<string, any>;
+  // Zod v3
+  if (s._def?.typeName === 'ZodDate') return true;
+  // Zod v4 – exposes a top-level .def object and also ._zod.def
+  if (s.def?.type === 'date') return true;
+  if (s._zod?.def?.type === 'date') return true;
+  return false;
+}
+
+/**
+ * Convert a Zod schema to JSON schema string using Zod v4+ toJSONSchema method.
+ * - Dates (z.date() / z.coerce.date()) are mapped to { type: "string", format: "date-time" }
+ *   because tRPC transports them as ISO 8601 strings.
+ * - Other unrepresentable types (transforms, functions) are silently mapped to {} instead of
+ *   crashing, by passing unrepresentable: 'any'.
  * @param schema - Zod schema object
  * @returns JSON schema as string or undefined if conversion fails
  */
@@ -379,9 +404,21 @@ function zodSchemaToString(schema: unknown): string | undefined {
   try {
     // Check if it has the toJSONSchema method (Zod v4+)
     if (schema && typeof schema === 'object' && 'toJSONSchema' in schema) {
-      const toJSONSchema = (schema as { toJSONSchema: () => unknown }).toJSONSchema;
+      const toJSONSchema = (schema as { toJSONSchema: (options?: unknown) => unknown })
+        .toJSONSchema;
       if (typeof toJSONSchema === 'function') {
-        const jsonSchema = toJSONSchema();
+        const jsonSchema = toJSONSchema.call(schema, {
+          // Don't throw on transforms/functions – fall back to an unconstrained schema instead.
+          unrepresentable: 'any',
+          override: (ctx: any) => {
+            // Map Zod date schemas → { type: "string", format: "date-time" }.
+            // This covers z.date() and z.coerce.date(), both of which transport as ISO strings.
+            // NOTE: ctx.jsonSchema must be mutated in-place; reassigning the reference has no effect.
+            if (isZodDateSchema(ctx.zodSchema)) {
+              Object.assign(ctx.jsonSchema, { type: 'string', format: 'date-time' });
+            }
+          }
+        });
         return JSON.stringify(jsonSchema, null, 2);
       }
     }

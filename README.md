@@ -90,6 +90,8 @@ Powered by Zod's `toJSONSchema()` method, the generator automatically:
 - Creates TypeScript type definitions
 - Identifies optional vs required fields
 - Handles complex types (unions, intersections, arrays, enums, records)
+- **Date fields** - `z.date()` and `z.coerce.date()` are represented as ISO 8601 strings
+  (`{ type: "string", format: "date-time" }`), matching how tRPC transports dates over the wire
 
 ### 🎨 Modern, Beautiful UI
 
