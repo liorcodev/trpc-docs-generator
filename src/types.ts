@@ -5,16 +5,19 @@
 export type RouteMeta = {
   /** Human-readable name for the route */
   name?: string;
-  /** Description of what the route does */
-  description?: string;
-  /** Tags for grouping routes */
-  tags?: string[];
-  /** Whether this route is deprecated */
-  deprecated?: boolean;
-  /** Whether this route requires authentication */
-  auth?: boolean;
-  /** Roles allowed to access this route */
-  roles?: string[];
+  /** Documentation metadata */
+  docs?: {
+    /** Description of what the route does */
+    description?: string;
+    /** Tags for grouping routes */
+    tags?: string[];
+    /** Whether this route is deprecated */
+    deprecated?: boolean;
+    /** Whether this route requires authentication */
+    auth?: boolean;
+    /** Roles allowed to access this route */
+    roles?: string[];
+  };
 };
 
 /**

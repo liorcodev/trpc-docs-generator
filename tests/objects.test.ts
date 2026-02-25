@@ -12,7 +12,7 @@ const router = t.router({
       z.object({
         name: z.string(),
         age: z.number().optional(),
-        role: z.string().optional(),
+        role: z.string().optional()
       })
     )
     .mutation(() => ({ id: 1 })),
@@ -24,11 +24,11 @@ const router = t.router({
       z.object({
         user: z.object({
           id: z.number(),
-          address: z.object({ city: z.string() }),
-        }),
+          address: z.object({ city: z.string() })
+        })
       })
     )
-    .query(() => ''),
+    .query(() => '')
 });
 
 describe('object – required vs optional fields', () => {

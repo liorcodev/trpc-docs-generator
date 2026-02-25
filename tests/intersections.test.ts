@@ -10,7 +10,7 @@ const Base = z.object({ id: z.number() });
 const Extra = z.object({ name: z.string() });
 
 const router = t.router({
-  merged: t.procedure.input(Base.and(Extra)).query(() => ''),
+  merged: t.procedure.input(Base.and(Extra)).query(() => '')
 });
 
 describe('intersection types', () => {

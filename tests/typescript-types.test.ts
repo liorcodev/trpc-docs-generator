@@ -11,13 +11,11 @@ const router = t.router({
   numField: t.procedure.input(z.object({ v: z.number() })).query(() => 0),
   boolField: t.procedure.input(z.object({ v: z.boolean() })).query(() => false),
   arrField: t.procedure.input(z.object({ v: z.array(z.string()) })).query(() => ''),
-  recordField: t.procedure
-    .input(z.object({ v: z.record(z.string(), z.number()) }))
-    .query(() => ''),
+  recordField: t.procedure.input(z.object({ v: z.record(z.string(), z.number()) })).query(() => ''),
   enumField: t.procedure.input(z.object({ v: z.enum(['a', 'b', 'c']) })).query(() => ''),
   objField: t.procedure
     .input(z.object({ v: z.object({ x: z.number(), y: z.string().optional() }) }))
-    .query(() => ''),
+    .query(() => '')
 });
 
 describe('TypeScript type generation', () => {

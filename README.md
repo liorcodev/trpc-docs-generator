@@ -418,7 +418,7 @@ type RouteMeta = {
     auth?: boolean;
     /** Roles allowed to access this route */
     roles?: string[];
-  }
+  };
 };
 ```
 
@@ -453,7 +453,7 @@ export const appRouter = t.router({
     list: t.procedure
       .meta({
         name: 'List Users',
-        docs: {   
+        docs: {
           description: 'Get a paginated list of users',
           tags: ['Users'],
           auth: true,

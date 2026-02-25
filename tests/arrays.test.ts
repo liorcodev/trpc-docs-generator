@@ -11,7 +11,7 @@ const router = t.router({
   numArr: t.procedure.input(z.object({ ids: z.array(z.number()) })).query(() => ''),
   objArr: t.procedure
     .input(z.object({ items: z.array(z.object({ id: z.number(), name: z.string() })) }))
-    .query(() => ''),
+    .query(() => '')
 });
 
 describe('array types', () => {

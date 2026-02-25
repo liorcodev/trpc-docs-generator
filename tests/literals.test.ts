@@ -9,7 +9,7 @@ const t = initTRPC.create();
 const router = t.router({
   strLit: t.procedure.input(z.object({ v: z.literal('hello') })).query(() => ''),
   numLit: t.procedure.input(z.object({ v: z.literal(42) })).query(() => 0),
-  boolLit: t.procedure.input(z.object({ v: z.literal(true) })).query(() => false),
+  boolLit: t.procedure.input(z.object({ v: z.literal(true) })).query(() => false)
 });
 
 describe('literals', () => {

@@ -7,11 +7,9 @@ import { inputSchema, inputExample, inputTypeScript } from './_helpers';
 const t = initTRPC.create();
 
 const router = t.router({
-  strOrNum: t.procedure
-    .input(z.object({ v: z.union([z.string(), z.number()]) }))
-    .query(() => ''),
+  strOrNum: t.procedure.input(z.object({ v: z.union([z.string(), z.number()]) })).query(() => ''),
   nullable: t.procedure.input(z.object({ v: z.string().nullable() })).query(() => ''),
-  nullish: t.procedure.input(z.object({ v: z.string().nullish() })).query(() => ''),
+  nullish: t.procedure.input(z.object({ v: z.string().nullish() })).query(() => '')
 });
 
 describe('union types', () => {

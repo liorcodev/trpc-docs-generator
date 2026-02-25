@@ -13,8 +13,8 @@ const router = t.router({
       z.object({
         filter: z.union([
           z.object({ type: z.literal('id'), value: z.number() }),
-          z.object({ type: z.literal('name'), value: z.string() }),
-        ]),
+          z.object({ type: z.literal('name'), value: z.string() })
+        ])
       })
     )
     .query(() => ''),
@@ -25,7 +25,7 @@ const router = t.router({
     .query(() => ''),
 
   // Nullable date
-  nullableDate: t.procedure.input(z.object({ at: z.date().nullable() })).query(() => ''),
+  nullableDate: t.procedure.input(z.object({ at: z.date().nullable() })).query(() => '')
 });
 
 describe('edge cases', () => {

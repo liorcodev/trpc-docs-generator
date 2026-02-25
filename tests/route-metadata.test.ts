@@ -2,19 +2,21 @@ import { describe, test, expect } from 'bun:test';
 import { initTRPC } from '@trpc/server';
 import { z } from 'zod';
 import { collectRoutes } from '../src/collect-routes';
+import { type RouteMeta } from '../src/types';
 import { getRoute } from './_helpers';
 
-const t = initTRPC
-  .meta<{ name?: string; description?: string; tags?: string[]; auth?: boolean }>()
-  .create();
+const t = initTRPC.meta<RouteMeta>().create();
 
 const router = t.router({
   queryProc: t.procedure
-    .meta({ name: 'Get Item', description: 'Fetches an item', tags: ['items'], auth: true })
+    .meta({
+      name: 'Get Item',
+      docs: { description: 'Fetches an item', tags: ['items'], auth: true }
+    })
     .input(z.object({ id: z.string() }))
     .query(() => ''),
   mutProc: t.procedure.input(z.object({ name: z.string() })).mutation(() => ({ id: 1 })),
-  noInput: t.procedure.query(() => 'ok'),
+  noInput: t.procedure.query(() => 'ok')
 });
 
 describe('route metadata', () => {
@@ -29,9 +31,9 @@ describe('route metadata', () => {
   test('meta fields are extracted correctly', () => {
     const route = getRoute(collectRoutes(router), 'queryProc');
     expect(route.meta?.name).toBe('Get Item');
-    expect(route.meta?.description).toBe('Fetches an item');
-    expect(route.meta?.tags).toEqual(['items']);
-    expect(route.meta?.auth).toBe(true);
+    expect(route.meta?.docs?.description).toBe('Fetches an item');
+    expect(route.meta?.docs?.tags).toEqual(['items']);
+    expect(route.meta?.docs?.auth).toBe(true);
   });
 
   test('procedure without .meta() has undefined meta', () => {

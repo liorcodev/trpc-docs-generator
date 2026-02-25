@@ -11,7 +11,7 @@ const router = t.router({
     .input(z.object({ id: z.string() }))
     .output(z.object({ id: z.string(), name: z.string(), age: z.number().optional() }))
     .query(() => ({ id: '1', name: 'Alice' })),
-  noOutput: t.procedure.input(z.object({ id: z.string() })).query(() => ''),
+  noOutput: t.procedure.input(z.object({ id: z.string() })).query(() => '')
 });
 
 describe('output schemas', () => {

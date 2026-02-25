@@ -9,7 +9,7 @@ const t = initTRPC.create();
 const router = t.router({
   byStatus: t.procedure
     .input(z.object({ status: z.enum(['active', 'inactive', 'pending']) }))
-    .query(() => ''),
+    .query(() => '')
 });
 
 describe('enums', () => {
@@ -21,7 +21,7 @@ describe('enums', () => {
     expect(inputSchema(collectRoutes(router), 'byStatus').properties.status.enum).toEqual([
       'active',
       'inactive',
-      'pending',
+      'pending'
     ]);
   });
 

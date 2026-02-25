@@ -1,6 +1,6 @@
 {
   "name": "trpc-docs-generator",
-  "version": "0.5.2",
+  "version": "0.6.0",
   "author": "Lior Cohen",
   "homepage": "https://github.com/liorcodev/trpc-docs-generator#readme",
   "repository": {

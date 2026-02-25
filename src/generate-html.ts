@@ -104,21 +104,21 @@ export function generateDocsHtml(routes: RouteInfo[], options: DocsGeneratorOpti
             <div class="stat-label">Total Endpoints</div>
           </div>
           <div class="stat">
-            <div class="stat-value">${routes.filter(r => !(r.meta?.docs as RouteMeta)?.auth).length}</div>
+            <div class="stat-value">${routes.filter(r => !(r.meta?.docs as RouteMeta['docs'])?.auth).length}</div>
             <div class="stat-label">Public Endpoints</div>
             <div class="stat-breakdown">
-              <span>${routes.filter(r => !(r.meta?.docs as RouteMeta)?.auth && r.type === 'query').length} Queries</span>
+              <span>${routes.filter(r => !(r.meta?.docs as RouteMeta['docs'])?.auth && r.type === 'query').length} Queries</span>
               <span>•</span>
-              <span>${routes.filter(r => !(r.meta?.docs as RouteMeta)?.auth && r.type === 'mutation').length} Mutations</span>
+              <span>${routes.filter(r => !(r.meta?.docs as RouteMeta['docs'])?.auth && r.type === 'mutation').length} Mutations</span>
             </div>
           </div>
           <div class="stat">
-            <div class="stat-value">${routes.filter(r => (r.meta?.docs as RouteMeta)?.auth).length}</div>
+            <div class="stat-value">${routes.filter(r => (r.meta?.docs as RouteMeta['docs'])?.auth).length}</div>
             <div class="stat-label">Protected Endpoints</div>
             <div class="stat-breakdown">
-              <span>${routes.filter(r => (r.meta?.docs as RouteMeta)?.auth && r.type === 'query').length} Queries</span>
+              <span>${routes.filter(r => (r.meta?.docs as RouteMeta['docs'])?.auth && r.type === 'query').length} Queries</span>
               <span>•</span>
-              <span>${routes.filter(r => (r.meta?.docs as RouteMeta)?.auth && r.type === 'mutation').length} Mutations</span>
+              <span>${routes.filter(r => (r.meta?.docs as RouteMeta['docs'])?.auth && r.type === 'mutation').length} Mutations</span>
             </div>
           </div>
         </div>
@@ -179,7 +179,7 @@ function formatGroupName(group: string): string {
 }
 
 function generateRouteCard(route: RouteInfo): string {
-  const docs = route.meta?.docs as RouteMeta | undefined;
+  const docs = route.meta?.docs as RouteMeta['docs'];
   const routeId = route.path.replace(/\./g, '-');
 
   return `

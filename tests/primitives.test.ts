@@ -11,13 +11,13 @@ const router = t.router({
   num: t.procedure.input(z.object({ v: z.number() })).query(() => 0),
   bool: t.procedure.input(z.object({ v: z.boolean() })).query(() => false),
   nullVal: t.procedure.input(z.object({ v: z.null() })).query(() => null),
-  intVal: t.procedure.input(z.object({ v: z.number().int() })).query(() => 0),
+  intVal: t.procedure.input(z.object({ v: z.number().int() })).query(() => 0)
 });
 
 describe('primitive types', () => {
   test('z.string() → type:string in JSON schema', () => {
     expect(inputSchema(collectRoutes(router), 'str').properties.v).toMatchObject({
-      type: 'string',
+      type: 'string'
     });
   });
 
@@ -40,7 +40,7 @@ describe('primitive types', () => {
 
   test('z.boolean() → type:boolean in JSON schema', () => {
     expect(inputSchema(collectRoutes(router), 'bool').properties.v).toMatchObject({
-      type: 'boolean',
+      type: 'boolean'
     });
   });
 
@@ -50,7 +50,7 @@ describe('primitive types', () => {
 
   test('z.null() → type:null in JSON schema', () => {
     expect(inputSchema(collectRoutes(router), 'nullVal').properties.v).toMatchObject({
-      type: 'null',
+      type: 'null'
     });
   });
 

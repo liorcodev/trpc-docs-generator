@@ -5,6 +5,43 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.0] - 2026-02-25
+
+### Breaking Changes
+
+- **`RouteMeta` type restructured** — The `docs` metadata fields (`description`, `tags`,
+  `deprecated`, `auth`, `roles`) must now be nested under a `docs` sub-object. The previous flat
+  shape was inconsistent with how the HTML generator read the metadata, meaning those fields were
+  silently ignored in the generated documentation.
+
+  **Before (broken — fields were silently ignored):**
+
+  ```ts
+  t.procedure.meta({
+    name: 'Get User',
+    description: 'Fetch a user by ID', // ❌ never rendered
+    tags: ['Users'], // ❌ never rendered
+    auth: true // ❌ never rendered
+  });
+  ```
+
+  **After (correct):**
+
+  ```ts
+  t.procedure.meta({
+    name: 'Get User',
+    docs: {
+      description: 'Fetch a user by ID', // ✅
+      tags: ['Users'], // ✅
+      auth: true // ✅
+    }
+  });
+  ```
+
+  `name` remains at the top level of `RouteMeta`. All other documentation fields move under `docs`.
+
+---
+
 ## [0.5.2] - 2026-02-24
 
 ### Fixed
