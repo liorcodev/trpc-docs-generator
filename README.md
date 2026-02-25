@@ -161,9 +161,11 @@ export const appRouter = t.router({
   getUser: t.procedure
     .meta({
       name: 'Get User',
-      description: 'Retrieve user information by ID',
-      tags: ['Users'],
-      auth: true
+      docs: {
+        description: 'Retrieve user information by ID',
+        tags: ['Users'],
+        auth: true
+      }
     })
     .input(z.object({ userId: z.string() }))
     .output(
@@ -181,10 +183,12 @@ export const appRouter = t.router({
   createPost: t.procedure
     .meta({
       name: 'Create Post',
-      description: 'Create a new blog post',
-      tags: ['Posts'],
-      auth: true,
-      roles: ['admin', 'editor']
+      docs: {
+        description: 'Create a new blog post',
+        tags: ['Posts'],
+        auth: true,
+        roles: ['admin', 'editor']
+      }
     })
     .input(
       z.object({
@@ -402,16 +406,19 @@ Type definition for route metadata (use with `initTRPC.meta<RouteMeta>()`):
 type RouteMeta = {
   /** Human-readable name for the route */
   name?: string;
-  /** Description of what the route does */
-  description?: string;
-  /** Tags for grouping routes */
-  tags?: string[];
-  /** Whether this route is deprecated */
-  deprecated?: boolean;
-  /** Whether this route requires authentication */
-  auth?: boolean;
-  /** Roles allowed to access this route */
-  roles?: string[];
+  /** Documentation metadata */
+  docs?: {
+    /** Description of what the route does */
+    description?: string;
+    /** Tags for grouping routes */
+    tags?: string[];
+    /** Whether this route is deprecated */
+    deprecated?: boolean;
+    /** Whether this route requires authentication */
+    auth?: boolean;
+    /** Roles allowed to access this route */
+    roles?: string[];
+  }
 };
 ```
 
@@ -433,8 +440,10 @@ export const appRouter = t.router({
   health: t.procedure
     .meta({
       name: 'Health Check',
-      description: 'Check if the API is running',
-      tags: ['System']
+      docs: {
+        description: 'Check if the API is running',
+        tags: ['System']
+      }
     })
     .output(z.object({ status: z.literal('ok') }))
     .query(() => ({ status: 'ok' as const })),
@@ -444,10 +453,12 @@ export const appRouter = t.router({
     list: t.procedure
       .meta({
         name: 'List Users',
-        description: 'Get a paginated list of users',
-        tags: ['Users'],
-        auth: true,
-        roles: ['admin']
+        docs: {   
+          description: 'Get a paginated list of users',
+          tags: ['Users'],
+          auth: true,
+          roles: ['admin']
+        }
       })
       .input(
         z.object({
@@ -478,10 +489,12 @@ export const appRouter = t.router({
     getByEmail: t.procedure
       .meta({
         name: 'Get User by Email',
-        description: 'Retrieve user by email address',
-        tags: ['Users'],
-        deprecated: true,
-        auth: true
+        docs: {
+          description: 'Retrieve user by email address',
+          tags: ['Users'],
+          deprecated: true,
+          auth: true
+        }
       })
       .input(z.object({ email: z.string().email() }))
       .output(
@@ -560,10 +573,12 @@ t.procedure.input(
 ```typescript
 t.procedure.meta({
   name: 'Create User', // Clear, readable name
-  description: 'Creates a new user account with the provided information',
-  tags: ['Users', 'Authentication'], // Logical grouping
-  auth: true, // Show auth requirement
-  roles: ['admin'] // Show role requirements
+  docs: {
+    description: 'Creates a new user account with the provided information',
+    tags: ['Users', 'Authentication'], // Logical grouping
+    auth: true, // Show auth requirement
+    roles: ['admin'] // Show role requirements
+  }
 });
 ```
 
@@ -571,8 +586,10 @@ t.procedure.meta({
 
 ```typescript
 t.procedure.meta({
-  deprecated: true,
-  description: 'Use users.getById instead'
+  docs: {
+    deprecated: true,
+    description: 'Use users.getById instead'
+  }
 });
 ```
 
@@ -581,14 +598,14 @@ t.procedure.meta({
 ```typescript
 const appRouter = t.router({
   // All auth-related routes
-  login: t.procedure.meta({ tags: ['Authentication'] }),
-  logout: t.procedure.meta({ tags: ['Authentication'] }),
-  register: t.procedure.meta({ tags: ['Authentication'] }),
+  login: t.procedure.meta({ docs: { tags: ['Authentication'] } }),
+  logout: t.procedure.meta({ docs: { tags: ['Authentication'] } }),
+  register: t.procedure.meta({ docs: { tags: ['Authentication'] } }),
 
   // All user-related routes
-  getUser: t.procedure.meta({ tags: ['Users'] }),
-  updateUser: t.procedure.meta({ tags: ['Users'] }),
-  deleteUser: t.procedure.meta({ tags: ['Users'] })
+  getUser: t.procedure.meta({ docs: { tags: ['Users'] } }),
+  updateUser: t.procedure.meta({ docs: { tags: ['Users'] } }),
+  deleteUser: t.procedure.meta({ docs: { tags: ['Users'] } })
 });
 ```
 
