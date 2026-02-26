@@ -333,12 +333,24 @@ header p {
   color: white;
 }
 
+.route-path-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  flex: 1;
+}
+
+.route-name {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
 .route-path {
   font-family: 'SF Mono', 'Monaco', 'Cascadia Code', 'Consolas', monospace;
-  font-size: 0.875rem;
+  font-size: 0.8rem;
   font-weight: 500;
-  color: var(--text-primary);
-  flex: 1;
+  color: var(--text-secondary);
   letter-spacing: -0.01em;
 }
 

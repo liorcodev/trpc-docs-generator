@@ -83,7 +83,7 @@ export function generateDocsHtml(routes: RouteInfo[], options: DocsGeneratorOpti
             .map(
               route => `
             <a href="#${route.path.replace(/\./g, '-')}" class="sidebar-link">
-              ${route.path.split('.').pop()}
+              ${route.meta?.name ?? route.path.split('.').pop()}
             </a>
           `
             )
@@ -186,7 +186,10 @@ function generateRouteCard(route: RouteInfo): string {
     <div class="route-card" id="${routeId}">
       <div class="route-header">
         <span class="method-badge method-${route.type}">${route.type}</span>
-        <span class="route-path">${route.path}</span>
+        <div class="route-path-info">
+          ${route.meta?.name ? `<span class="route-name">${route.meta.name}</span>` : ''}
+          <span class="route-path">${route.path}</span>
+        </div>
         <div class="route-tags">
           ${docs?.auth ? '<span class="tag tag-auth"><span class="iconify" data-icon="mdi:shield-lock" style="vertical-align: -0.125em; margin-right: 0.25rem;"></span>Auth</span>' : ''}
           ${docs?.deprecated ? '<span class="tag tag-deprecated"><span class="iconify" data-icon="mdi:alert" style="vertical-align: -0.125em; margin-right: 0.25rem;"></span>Deprecated</span>' : ''}
