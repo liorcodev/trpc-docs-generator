@@ -5,11 +5,31 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.7.0] - 2026-03-15
+
+### Added
+
+- **Search & Filter System** - Find endpoints quickly with powerful filtering capabilities:
+  - **Real-time Search** - Instantly filter endpoints by name, path, description, or tags as you
+    type (300ms debounce)
+  - **Type Filter** - Filter by procedure type (All Types / Queries / Mutations)
+  - **Auth Filter** - Show only public or protected endpoints
+  - **Tag Filter** - Filter by custom tags from route metadata
+  - **Active Filter Highlighting** - Selected filters are highlighted in blue for clear visual
+    feedback
+  - **Filter Persistence** - All filter states are automatically saved to localStorage and restored
+    on page reload
+  - **Clear Filters Button** - One-click reset with red highlighting when filters are active
+  - **Dynamic Results Counter** - Shows "Showing X of Y endpoints" based on active filters
+  - **Smart UI Updates** - Automatically hides empty route groups and sidebar sections when filtered
+
+---
+
 ## [0.6.1] - 2026-02-26
 
 ### Fixed
 
-- **`meta.name` not rendered in UI** — The `name` field from route metadata was never displayed in
+- **`meta.name` not rendered in UI** - The `name` field from route metadata was never displayed in
   the generated documentation. It now appears as a title in the route card header, with the path
   shown beneath it as a secondary label. The sidebar also uses the name when available, falling back
   to the path segment.
@@ -20,12 +40,12 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Breaking Changes
 
-- **`RouteMeta` type restructured** — The `docs` metadata fields (`description`, `tags`,
+- **`RouteMeta` type restructured** - The `docs` metadata fields (`description`, `tags`,
   `deprecated`, `auth`, `roles`) must now be nested under a `docs` sub-object. The previous flat
   shape was inconsistent with how the HTML generator read the metadata, meaning those fields were
   silently ignored in the generated documentation.
 
-  **Before (broken — fields were silently ignored):**
+  **Before (broken - fields were silently ignored):**
 
   ```ts
   t.procedure.meta({

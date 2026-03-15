@@ -122,6 +122,53 @@ export function generateDocsHtml(routes: RouteInfo[], options: DocsGeneratorOpti
             </div>
           </div>
         </div>
+
+        <div class="search-filter-bar">
+          <div class="search-box">
+            <span class="iconify search-icon" data-icon="mdi:magnify"></span>
+            <input 
+              type="search" 
+              id="searchInput" 
+              class="search-input" 
+              placeholder="Search endpoints, descriptions..."
+            />
+          </div>
+          
+          <div class="filter-group">
+            <select id="typeFilter" class="filter-select">
+              <option value="all">All Types</option>
+              <option value="query">Queries</option>
+              <option value="mutation">Mutations</option>
+            </select>
+            
+            <select id="authFilter" class="filter-select">
+              <option value="all">All Endpoints</option>
+              <option value="public">Public</option>
+              <option value="protected">Protected</option>
+            </select>
+            
+            <select id="tagFilter" class="filter-select">
+              <option value="all">All Tags</option>
+              ${Array.from(
+                new Set(routes.flatMap(r => (r.meta?.docs as RouteMeta['docs'])?.tags || []))
+              )
+                .sort()
+                .map(tag => `<option value="${escapeHtml(tag)}">${escapeHtml(tag)}</option>`)
+                .join('')}
+            </select>
+          </div>
+          
+          <div class="filter-controls">
+            <button class="clear-filters-btn" id="clearFiltersBtn" onclick="clearFilters()">
+              <span class="iconify" data-icon="mdi:filter-remove" style="width: 14px; height: 14px;"></span>
+              Clear Filters
+            </button>
+          </div>
+          
+          <div class="results-count" id="resultsCount">
+            Showing ${routes.length} of ${routes.length} endpoints
+          </div>
+        </div>
       </header>
 
       ${Object.entries(groupedRoutes)
@@ -182,8 +229,23 @@ function generateRouteCard(route: RouteInfo): string {
   const docs = route.meta?.docs as RouteMeta['docs'];
   const routeId = route.path.replace(/\./g, '-');
 
+  // Prepare searchable text and filter attributes
+  const searchableText = [
+    route.path,
+    route.meta?.name || '',
+    docs?.description || '',
+    ...(docs?.tags || [])
+  ]
+    .join(' ')
+    .toLowerCase();
+
   return `
-    <div class="route-card" id="${routeId}">
+    <div class="route-card" 
+         id="${routeId}"
+         data-type="${route.type}"
+         data-auth="${docs?.auth ? 'true' : 'false'}"
+         data-tags="${(docs?.tags || []).join(',')}"
+         data-search="${escapeHtml(searchableText)}">
       <div class="route-header">
         <span class="method-badge method-${route.type}">${route.type}</span>
         <div class="route-path-info">

@@ -387,3 +387,210 @@ window.addOptionalField = function (routeId, fieldName, fieldExample, badgeEleme
     alert('Could not add field. Please ensure the JSON is valid.');
   }
 };
+
+// Search and filter functionality
+function performSearch() {
+  const searchInput = document.getElementById('searchInput');
+  const typeFilter = document.getElementById('typeFilter');
+  const authFilter = document.getElementById('authFilter');
+  const tagFilter = document.getElementById('tagFilter');
+  const resultsCount = document.getElementById('resultsCount');
+
+  if (!searchInput || !typeFilter || !authFilter || !tagFilter || !resultsCount) {
+    return;
+  }
+
+  const searchTerm = searchInput.value.toLowerCase().trim();
+  const selectedType = typeFilter.value;
+  const selectedAuth = authFilter.value;
+  const selectedTag = tagFilter.value;
+
+  // Save filters to localStorage
+  localStorage.setItem(
+    'trpc-docs-filters',
+    JSON.stringify({
+      search: searchTerm,
+      type: selectedType,
+      auth: selectedAuth,
+      tag: selectedTag
+    })
+  );
+
+  // Update filter badge and clear button
+  updateFilterBadge();
+
+  let visibleCount = 0;
+  const totalCount = document.querySelectorAll('.route-card').length;
+
+  // Filter route cards
+  document.querySelectorAll('.route-card').forEach(card => {
+    const cardType = card.getAttribute('data-type');
+    const cardAuth = card.getAttribute('data-auth') === 'true';
+    const cardTags = card.getAttribute('data-tags') || '';
+    const cardSearch = card.getAttribute('data-search') || '';
+
+    // Apply filters
+    const matchesSearch = !searchTerm || cardSearch.includes(searchTerm);
+    const matchesType = selectedType === 'all' || cardType === selectedType;
+    const matchesAuth =
+      selectedAuth === 'all' ||
+      (selectedAuth === 'public' && !cardAuth) ||
+      (selectedAuth === 'protected' && cardAuth);
+    const matchesTag = selectedTag === 'all' || cardTags.split(',').includes(selectedTag);
+
+    const isVisible = matchesSearch && matchesType && matchesAuth && matchesTag;
+
+    // Show/hide card
+    card.style.display = isVisible ? 'block' : 'none';
+
+    // Update sidebar link visibility
+    const cardId = card.id;
+    const sidebarLink = document.querySelector(`.sidebar-link[href="#${cardId}"]`);
+    if (sidebarLink) {
+      sidebarLink.style.display = isVisible ? 'block' : 'none';
+    }
+
+    if (isVisible) visibleCount++;
+  });
+
+  // Hide empty route groups
+  document.querySelectorAll('.route-group').forEach(group => {
+    const visibleCards = Array.from(group.querySelectorAll('.route-card')).filter(
+      card => card.style.display !== 'none'
+    );
+    group.style.display = visibleCards.length > 0 ? 'block' : 'none';
+  });
+
+  // Hide empty sidebar groups
+  document.querySelectorAll('.sidebar-group').forEach(group => {
+    const visibleLinks = Array.from(group.querySelectorAll('.sidebar-link')).filter(
+      link => link.style.display !== 'none'
+    );
+    group.style.display = visibleLinks.length > 0 ? 'block' : 'none';
+  });
+
+  // Update results counter
+  resultsCount.textContent = `Showing ${visibleCount} of ${totalCount} endpoints`;
+}
+
+// Update filter badge visibility
+function updateFilterBadge() {
+  const searchInput = document.getElementById('searchInput');
+  const typeFilter = document.getElementById('typeFilter');
+  const authFilter = document.getElementById('authFilter');
+  const tagFilter = document.getElementById('tagFilter');
+  const clearBtn = document.getElementById('clearFiltersBtn');
+
+  if (!searchInput || !typeFilter || !authFilter || !tagFilter || !clearBtn) {
+    return;
+  }
+
+  // Check each filter's active state
+  const searchActive = searchInput.value.trim() !== '';
+  const typeActive = typeFilter.value !== 'all';
+  const authActive = authFilter.value !== 'all';
+  const tagActive = tagFilter.value !== 'all';
+
+  const hasActiveFilters = searchActive || typeActive || authActive || tagActive;
+
+  // Update button state
+  clearBtn.disabled = !hasActiveFilters;
+
+  // Add/remove active class to clear button
+  if (hasActiveFilters) {
+    clearBtn.classList.add('active');
+  } else {
+    clearBtn.classList.remove('active');
+  }
+
+  // Highlight active filters
+  if (searchActive) {
+    searchInput.classList.add('filter-active');
+  } else {
+    searchInput.classList.remove('filter-active');
+  }
+
+  if (typeActive) {
+    typeFilter.classList.add('filter-active');
+  } else {
+    typeFilter.classList.remove('filter-active');
+  }
+
+  if (authActive) {
+    authFilter.classList.add('filter-active');
+  } else {
+    authFilter.classList.remove('filter-active');
+  }
+
+  if (tagActive) {
+    tagFilter.classList.add('filter-active');
+  } else {
+    tagFilter.classList.remove('filter-active');
+  }
+}
+
+// Clear all filters
+function clearFilters() {
+  const searchInput = document.getElementById('searchInput');
+  const typeFilter = document.getElementById('typeFilter');
+  const authFilter = document.getElementById('authFilter');
+  const tagFilter = document.getElementById('tagFilter');
+
+  if (searchInput) searchInput.value = '';
+  if (typeFilter) typeFilter.value = 'all';
+  if (authFilter) authFilter.value = 'all';
+  if (tagFilter) tagFilter.value = 'all';
+
+  performSearch();
+}
+
+// Load saved filters from localStorage
+function loadSavedFilters() {
+  const saved = localStorage.getItem('trpc-docs-filters');
+  if (!saved) return;
+
+  try {
+    const filters = JSON.parse(saved);
+    const searchInput = document.getElementById('searchInput');
+    const typeFilter = document.getElementById('typeFilter');
+    const authFilter = document.getElementById('authFilter');
+    const tagFilter = document.getElementById('tagFilter');
+
+    if (searchInput && filters.search) searchInput.value = filters.search;
+    if (typeFilter && filters.type) typeFilter.value = filters.type;
+    if (authFilter && filters.auth) authFilter.value = filters.auth;
+    if (tagFilter && filters.tag) tagFilter.value = filters.tag;
+
+    // Apply filters after loading
+    performSearch();
+  } catch (e) {
+    console.error('Error loading saved filters:', e);
+  }
+}
+
+// Debounce function for search input
+function debounce(func, wait) {
+  let timeout;
+  return function executedFunction(...args) {
+    const later = () => {
+      clearTimeout(timeout);
+      func(...args);
+    };
+    clearTimeout(timeout);
+    timeout = setTimeout(later, wait);
+  };
+}
+
+// Attach event listeners for search and filters
+const debouncedSearch = debounce(performSearch, 300);
+
+document.getElementById('searchInput')?.addEventListener('input', debouncedSearch);
+document.getElementById('typeFilter')?.addEventListener('change', performSearch);
+document.getElementById('authFilter')?.addEventListener('change', performSearch);
+document.getElementById('tagFilter')?.addEventListener('change', performSearch);
+
+// Load saved filters on page load
+loadSavedFilters();
+
+// Make clearFilters globally accessible
+window.clearFilters = clearFilters;

@@ -41,8 +41,9 @@ router with zero configuration. Not only does it document your API, but it also 
 
 - ⚡️ **Zero Config** - Works out of the box with any tRPC v11 router
 - 🧪 **Interactive Testing** - **Test endpoints directly in the browser with live fetch requests**
+- 🔍 **Search & Filter** - Instantly find endpoints with real-time search and smart filters
 - 🎨 **Beautiful UI** - Modern, responsive design with smooth animations
-- 🔍 **Smart Schema Inference** - Automatically extracts types from Zod validators
+- 🧠 **Smart Schema Inference** - Automatically extracts types from Zod validators
 - 📝 **Auto-Filled Examples** - Pre-filled JSON with required fields, click to add optional fields
 - 🔐 **Header Management** - Add custom headers (auth tokens, etc.), save and reuse them
 - 🌐 **Deploy Anywhere** - Works with Express, Next.js, Cloudflare Workers, and more
@@ -92,6 +93,17 @@ Powered by Zod's `toJSONSchema()` method, the generator automatically:
 - Handles complex types (unions, intersections, arrays, enums, records)
 - **Date fields** - `z.date()` and `z.coerce.date()` are represented as ISO 8601 strings
   (`{ type: "string", format: "date-time" }`), matching how tRPC transports dates over the wire
+
+### 🔍 Search & Filter System
+
+Quickly find what you need in large APIs:
+
+- **Real-time Search** - Filter endpoints by name, path, description, or tags as you type
+- **Smart Filters** - Filter by type (query/mutation), auth status (public/protected), or custom
+  tags
+- **Filter Persistence** - Your filter selections are saved across page reloads
+- **Visual Feedback** - Active filters highlighted in blue, clear button turns red when active
+- **Dynamic Results** - Shows count of visible endpoints and auto-hides empty sections
 
 ### 🎨 Modern, Beautiful UI
 
