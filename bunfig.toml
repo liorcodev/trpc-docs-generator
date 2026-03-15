@@ -4,6 +4,6 @@
 
 # Multiple patterns
 coveragePathIgnorePatterns = [
-  "**/*.ts",
+  "tests/**/*.ts",
   "*.config.js",
 ]

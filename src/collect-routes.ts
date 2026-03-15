@@ -500,3 +500,15 @@ function traverseRouter(router: AnyRouter): RouteInfo[] {
 export function collectRoutes(router: AnyRouter): RouteInfo[] {
   return traverseRouter(router);
 }
+
+// Internal helpers exported for white-box tests of branch behavior.
+export const __internal = {
+  extractOptionalFields,
+  generateExampleFromSchema,
+  generateJSONExample,
+  generateTypeScriptExample,
+  generateTypeScriptFromSchema,
+  getOptionalFields,
+  isZodDateSchema,
+  zodSchemaToString
+};
