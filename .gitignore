@@ -5,5 +5,4 @@ dist/
 .idea
 src/assets-inline.ts
 /.prettierrc
-scripts/generate-preview.ts
 preview.html

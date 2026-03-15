@@ -128,6 +128,8 @@ Routes are automatically organized by:
 ## Installation
 
 ```bash
+bun install trpc-docs-generator
+# or
 npm install trpc-docs-generator
 ```
 
@@ -630,6 +632,24 @@ Fully typed with TypeScript! Import types for better developer experience:
 ```typescript
 import type { RouteMeta, RouteInfo, DocsGeneratorOptions } from 'trpc-docs-generator';
 ```
+
+<br/>
+
+## Development
+
+### Generating a Preview
+
+To generate a standalone HTML preview for testing the documentation output:
+
+```bash
+bun scripts/generate-preview.ts
+```
+
+This creates `preview.html` in the root directory with example routes. Open it in your browser to
+see the generated documentation without setting up a server.
+
+The preview script includes a comprehensive example router with various features like
+authentication, roles, deprecated endpoints, and different schema types.
 
 <br/>
 
