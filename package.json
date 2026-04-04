@@ -1,6 +1,6 @@
 {
   "name": "trpc-docs-generator",
-  "version": "0.7.0",
+  "version": "0.8.0",
   "author": "Lior Cohen",
   "homepage": "https://github.com/liorcodev/trpc-docs-generator#readme",
   "repository": {
@@ -46,6 +46,7 @@
   ],
   "scripts": {
     "format": "prettier --write .",
+    "generate": "bun scripts/generate-preview.ts",
     "prebuild": "bun scripts/build-inline.js",
     "build": "tsc",
     "prepublishOnly": "bun run build"

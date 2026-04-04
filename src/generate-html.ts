@@ -28,6 +28,10 @@ export function generateDocsHtml(routes: RouteInfo[], options: DocsGeneratorOpti
     <span id="configButtonText">Configure Base URL</span>
   </button>
 
+  <button class="scroll-top-btn" id="scrollTopBtn" onclick="window.scrollTo({top:0,behavior:'smooth'})" aria-label="Scroll to top">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 15l-6-6-6 6"/></svg>
+  </button>
+
   <div class="config-modal" id="configModal">
     <div class="config-modal-content">
       <div class="config-modal-header">
@@ -60,44 +64,65 @@ export function generateDocsHtml(routes: RouteInfo[], options: DocsGeneratorOpti
     </div>
   </div>
 
-  <button class="mobile-menu-toggle" id="mobileMenuToggle" aria-label="Toggle navigation">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-      <line x1="3" y1="12" x2="21" y2="12"></line>
-      <line x1="3" y1="6" x2="21" y2="6"></line>
-      <line x1="3" y1="18" x2="21" y2="18"></line>
-    </svg>
-  </button>
+  <div class="mobile-topbar">
+    <button class="mobile-topbar-toggle" id="mobileMenuToggle" aria-label="Toggle navigation">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="3" y1="12" x2="21" y2="12"></line>
+        <line x1="3" y1="6" x2="21" y2="6"></line>
+        <line x1="3" y1="18" x2="21" y2="18"></line>
+      </svg>
+    </button>
+    <span class="mobile-topbar-title">${title}</span>
+    <button class="mobile-topbar-config" id="mobileConfigButton" onclick="openConfigModal()" aria-label="Configure Base URL">
+      <span class="iconify" data-icon="mdi:cog" style="width: 18px; height: 18px;"></span>
+    </button>
+  </div>
   <div class="sidebar-overlay" id="sidebarOverlay"></div>
   <div class="container">
     <nav class="sidebar" id="sidebar">
       <div class="sidebar-header">
         <img src="${getLogo()}" alt="Logo" class="sidebar-logo" />
+        <span class="sidebar-brand">${title}</span>
       </div>
-      <div class="sidebar-title"><span class="iconify" data-icon="mdi:book-open-page-variant" style="vertical-align: -0.125em; margin-right: 0.5rem;"></span>Navigation</div>
-      ${Object.entries(groupedRoutes)
-        .map(
-          ([group, groupRoutes]) => `
-        <div class="sidebar-group">
-          <div class="sidebar-group-title">${formatGroupName(group)}</div>
-          ${groupRoutes
-            .map(
-              route => `
-            <a href="#${route.path.replace(/\./g, '-')}" class="sidebar-link">
-              ${route.meta?.name ?? route.path.split('.').pop()}
-            </a>
-          `
-            )
-            .join('')}
-        </div>
-      `
-        )
-        .join('')}
+      <div class="sidebar-nav">
+        <div class="sidebar-title">Navigation</div>
+        ${Object.entries(groupedRoutes)
+          .map(
+            ([group, groupRoutes]) => `
+          <div class="sidebar-group">
+            <div class="sidebar-group-title">${formatGroupName(group)}</div>
+            ${groupRoutes
+              .map(
+                route => `
+              <a href="#${route.path.replace(/\./g, '-')}" class="sidebar-link">
+                <span class="link-type-dot dot-${route.type}"></span>
+                ${route.meta?.name ?? route.path.split('.').pop()}
+              </a>
+            `
+              )
+              .join('')}
+          </div>
+        `
+          )
+          .join('')}
+      </div>
+      <div class="sidebar-footer">
+        <a href="https://github.com/liorcodev/trpc-docs-generator" target="_blank" rel="noopener noreferrer" class="sidebar-footer-link" title="View on GitHub">
+          <span class="iconify" data-icon="mdi:github" style="width: 20px; height: 20px;"></span>
+          <span>View on GitHub</span>
+        </a>
+      </div>
     </nav>
 
     <main class="main-content">
       <header>
-        <h1>${title}</h1>
-        <p><span class="iconify" data-icon="mdi:sparkles" style="vertical-align: -0.125em;"></span> tRPC API Documentation <span class="iconify" data-icon="mdi:sparkles" style="vertical-align: -0.125em;"></span></p>
+        <div class="header-top">
+          <h1>${title}</h1>
+          <p class="header-subtitle">
+            <span class="header-pill">tRPC</span>
+            API Documentation
+          </p>
+        </div>
         <div class="stats">
           <div class="stat">
             <div class="stat-value">${routes.length}</div>
@@ -122,65 +147,66 @@ export function generateDocsHtml(routes: RouteInfo[], options: DocsGeneratorOpti
             </div>
           </div>
         </div>
+      </header>
 
-        <div class="search-filter-bar">
-          <div class="search-box">
-            <span class="iconify search-icon" data-icon="mdi:magnify"></span>
-            <input 
-              type="search" 
-              id="searchInput" 
-              class="search-input" 
-              placeholder="Search endpoints, descriptions..."
-            />
-          </div>
+      <div class="search-filter-bar">
+        <div class="search-box">
+          <span class="iconify search-icon" data-icon="mdi:magnify"></span>
+          <input 
+            type="search" 
+            id="searchInput" 
+            class="search-input" 
+            placeholder="Search endpoints, descriptions..."
+          />
+        </div>
+        
+        <div class="filter-group">
+          <select id="typeFilter" class="filter-select">
+            <option value="all">All Types</option>
+            <option value="query">Queries</option>
+            <option value="mutation">Mutations</option>
+          </select>
           
-          <div class="filter-group">
-            <select id="typeFilter" class="filter-select">
-              <option value="all">All Types</option>
-              <option value="query">Queries</option>
-              <option value="mutation">Mutations</option>
-            </select>
-            
-            <select id="authFilter" class="filter-select">
-              <option value="all">All Endpoints</option>
-              <option value="public">Public</option>
-              <option value="protected">Protected</option>
-            </select>
-            
-            <select id="tagFilter" class="filter-select">
-              <option value="all">All Tags</option>
-              ${Array.from(
-                new Set(routes.flatMap(r => (r.meta?.docs as RouteMeta['docs'])?.tags || []))
-              )
-                .sort()
-                .map(tag => `<option value="${escapeHtml(tag)}">${escapeHtml(tag)}</option>`)
-                .join('')}
-            </select>
-          </div>
+          <select id="authFilter" class="filter-select">
+            <option value="all">All Endpoints</option>
+            <option value="public">Public</option>
+            <option value="protected">Protected</option>
+          </select>
           
-          <div class="filter-controls">
-            <button class="clear-filters-btn" id="clearFiltersBtn" onclick="clearFilters()">
-              <span class="iconify" data-icon="mdi:filter-remove" style="width: 14px; height: 14px;"></span>
-              Clear Filters
-            </button>
-          </div>
-          
+          <select id="tagFilter" class="filter-select">
+            <option value="all">All Tags</option>
+            ${Array.from(
+              new Set(routes.flatMap(r => (r.meta?.docs as RouteMeta['docs'])?.tags || []))
+            )
+              .sort()
+              .map(tag => `<option value="${escapeHtml(tag)}">${escapeHtml(tag)}</option>`)
+              .join('')}
+          </select>
+        </div>
+        
+        <div class="filter-controls">
           <div class="results-count" id="resultsCount">
             Showing ${routes.length} of ${routes.length} endpoints
           </div>
+          <button class="clear-filters-btn" id="clearFiltersBtn" onclick="clearFilters()">
+            <span class="iconify" data-icon="mdi:filter-remove" style="width: 14px; height: 14px;"></span>
+            Clear Filters
+          </button>
         </div>
-      </header>
+      </div>
 
-      ${Object.entries(groupedRoutes)
-        .map(
-          ([group, groupRoutes]) => `
-        <section class="route-group" id="group-${group}">
-          <h2 class="route-group-header">${formatGroupName(group)}</h2>
-          ${groupRoutes.map(route => generateRouteCard(route)).join('')}
-        </section>
-      `
-        )
-        .join('')}
+      <div class="main-body">
+        ${Object.entries(groupedRoutes)
+          .map(
+            ([group, groupRoutes]) => `
+          <section class="route-group" id="group-${group}">
+            <h2 class="route-group-header">${formatGroupName(group)}</h2>
+            ${groupRoutes.map(route => generateRouteCard(route)).join('')}
+          </section>
+        `
+          )
+          .join('')}
+      </div>
     </main>
   </div>
 
@@ -240,7 +266,7 @@ function generateRouteCard(route: RouteInfo): string {
     .toLowerCase();
 
   return `
-    <div class="route-card" 
+    <div class="route-card type-${route.type}" 
          id="${routeId}"
          data-type="${route.type}"
          data-auth="${docs?.auth ? 'true' : 'false'}"
@@ -293,8 +319,10 @@ function generateRouteCard(route: RouteInfo): string {
               ? `
             <div class="route-section">
               <div class="route-section-title"><span class="iconify" data-icon="mdi:import" style="vertical-align: -0.125em; margin-right: 0.5rem;"></span>Input Schema</div>
-              <div class="schema-block">
-                <pre>${escapeHtml(route.inputTypeScript)}</pre>
+              <div class="schema-block">                <div class="schema-block-header">
+                  <span class="schema-lang-label">TypeScript</span>
+                  <button class="copy-btn" onclick="copySchema(this)">Copy</button>
+                </div>                <pre>${escapeHtml(route.inputTypeScript)}</pre>
               </div>
             </div>
           `
@@ -306,8 +334,10 @@ function generateRouteCard(route: RouteInfo): string {
               ? `
             <div class="route-section">
               <div class="route-section-title"><span class="iconify" data-icon="mdi:export" style="vertical-align: -0.125em; margin-right: 0.5rem;"></span>Output Schema</div>
-              <div class="schema-block">
-                <pre>${escapeHtml(route.outputTypeScript)}</pre>
+              <div class="schema-block">                <div class="schema-block-header">
+                  <span class="schema-lang-label">TypeScript</span>
+                  <button class="copy-btn" onclick="copySchema(this)">Copy</button>
+                </div>                <pre>${escapeHtml(route.outputTypeScript)}</pre>
               </div>
             </div>
           `
@@ -321,6 +351,7 @@ function generateRouteCard(route: RouteInfo): string {
                 Test Endpoint
               </div>
             </div>
+            <div class="test-panel-body">
 
             <div class="headers-manager">
               <label class="test-section-label">Request Headers</label>
@@ -392,6 +423,7 @@ function generateRouteCard(route: RouteInfo): string {
             </button>
 
             <div id="response-${routeId}" class="response-container" style="display: none;"></div>
+            </div>
           </div>
         </div>
       </div>

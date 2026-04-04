@@ -28,7 +28,30 @@ window.addEventListener('resize', () => {
 document.querySelectorAll('.route-header')?.forEach(header => {
   header.addEventListener('click', () => {
     const card = header.closest('.route-card');
-    card.classList.toggle('expanded');
+    const body = card.querySelector('.route-body');
+    const isExpanded = card.classList.contains('expanded');
+
+    if (isExpanded) {
+      // Snap max-height to actual height first so collapse starts immediately
+      body.style.maxHeight = body.scrollHeight + 'px';
+      requestAnimationFrame(() => {
+        body.style.maxHeight = '0';
+      });
+      card.classList.remove('expanded');
+    } else {
+      card.classList.add('expanded');
+      body.style.maxHeight = body.scrollHeight + 'px';
+      body.addEventListener(
+        'transitionend',
+        () => {
+          // Allow free resize (e.g. nested textareas) once fully open
+          if (card.classList.contains('expanded')) {
+            body.style.maxHeight = 'none';
+          }
+        },
+        { once: true }
+      );
+    }
   });
 });
 
@@ -36,9 +59,34 @@ document.querySelectorAll('.route-header')?.forEach(header => {
 document.querySelectorAll('.sidebar-link').forEach(link => {
   link.addEventListener('click', e => {
     e.preventDefault();
+
+    // Set active immediately on click
+    document.querySelectorAll('.sidebar-link').forEach(l => l.classList.remove('active'));
+    link.classList.add('active');
+
     const target = document.querySelector(link.getAttribute('href'));
     if (target) {
-      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      // Calculate total sticky header height
+      const mobileTopbar = document.querySelector('.mobile-topbar');
+      const stickyBar = document.querySelector('.search-filter-bar');
+
+      let stickyOffset = 0;
+
+      // Add mobile topbar height if visible
+      if (mobileTopbar && window.getComputedStyle(mobileTopbar).display !== 'none') {
+        stickyOffset += mobileTopbar.offsetHeight;
+      }
+
+      // Add search filter bar height
+      if (stickyBar) {
+        stickyOffset += stickyBar.offsetHeight;
+      }
+
+      // Add small buffer for better positioning
+      const offset = stickyOffset + 12;
+      const top = target.getBoundingClientRect().top + window.scrollY - offset;
+      window.scrollTo({ top, behavior: 'smooth' });
+
       // Close sidebar on mobile after clicking a link
       if (window.innerWidth <= 1200 && sidebar.classList.contains('active')) {
         toggleSidebar();
@@ -47,18 +95,86 @@ document.querySelectorAll('.sidebar-link').forEach(link => {
   });
 });
 
+// Scroll spy - highlight active section
+function updateActiveSection() {
+  // Calculate total sticky header height
+  const mobileTopbar = document.querySelector('.mobile-topbar');
+  const stickyBar = document.querySelector('.search-filter-bar');
+
+  let stickyOffset = 0;
+
+  // Add mobile topbar height if visible
+  if (mobileTopbar && window.getComputedStyle(mobileTopbar).display !== 'none') {
+    stickyOffset += mobileTopbar.offsetHeight;
+  }
+
+  // Add search filter bar height
+  if (stickyBar) {
+    stickyOffset += stickyBar.offsetHeight;
+  }
+
+  // Add a small buffer to trigger slightly before hiding under sticky header
+  const scrollPos = window.scrollY + stickyOffset + 20;
+
+  const sections = Array.from(document.querySelectorAll('.route-card')).filter(card =>
+    document.querySelector(`.sidebar-link[href="#${card.id}"]`)
+  );
+
+  if (sections.length === 0) return;
+
+  // Find the current section - the last one whose top has passed the scroll position
+  let current = sections[0];
+  for (const section of sections) {
+    if (section.offsetTop <= scrollPos) {
+      current = section;
+    } else {
+      break;
+    }
+  }
+
+  // Update active link
+  const activeLink = document.querySelector(`.sidebar-link[href="#${current.id}"]`);
+  const currentActive = document.querySelector('.sidebar-link.active');
+
+  if (activeLink && activeLink !== currentActive) {
+    document.querySelectorAll('.sidebar-link').forEach(l => l.classList.remove('active'));
+    activeLink.classList.add('active');
+  }
+}
+
+// Debounce scroll events
+let scrollTimeout;
+window.addEventListener(
+  'scroll',
+  () => {
+    if (scrollTimeout) {
+      window.cancelAnimationFrame(scrollTimeout);
+    }
+    scrollTimeout = window.requestAnimationFrame(updateActiveSection);
+  },
+  { passive: true }
+);
+
+// Set initial active state
+window.addEventListener('load', () => {
+  updateActiveSection();
+});
+
 // Configuration modal functions
 function updateConfigButton() {
   const baseUrl = localStorage.getItem('trpc-base-url');
   const configButton = document.getElementById('configButton');
   const configButtonText = document.getElementById('configButtonText');
+  const mobileConfigButton = document.getElementById('mobileConfigButton');
 
   if (baseUrl) {
     configButton.classList.add('configured');
     configButtonText.textContent = 'Change Base URL';
+    mobileConfigButton?.classList.add('configured');
   } else {
     configButton.classList.remove('configured');
     configButtonText.textContent = 'Configure Base URL';
+    mobileConfigButton?.classList.remove('configured');
   }
 }
 
@@ -594,3 +710,39 @@ loadSavedFilters();
 
 // Make clearFilters globally accessible
 window.clearFilters = clearFilters;
+
+// ── Copy schema button ─────────────────────────────────────────
+// ── Scroll to top button visibility ──────────────────────────
+(function () {
+  const btn = document.getElementById('scrollTopBtn');
+  if (!btn) return;
+  window.addEventListener(
+    'scroll',
+    () => {
+      btn.classList.toggle('visible', window.scrollY > 300);
+    },
+    { passive: true }
+  );
+})();
+
+// ── Copy schema button ─────────────────────────────────────────
+window.copySchema = function (btn) {
+  const pre = btn.closest('.schema-block').querySelector('pre');
+  if (!pre) return;
+  navigator.clipboard.writeText(pre.textContent || '').then(
+    () => {
+      btn.textContent = 'Copied!';
+      btn.classList.add('copied');
+      setTimeout(() => {
+        btn.textContent = 'Copy';
+        btn.classList.remove('copied');
+      }, 2000);
+    },
+    () => {
+      btn.textContent = 'Failed';
+      setTimeout(() => {
+        btn.textContent = 'Copy';
+      }, 2000);
+    }
+  );
+};

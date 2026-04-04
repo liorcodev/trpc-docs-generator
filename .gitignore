@@ -3,7 +3,6 @@ dist/
 *.log
 .DS_Store
 .idea
-src/assets-inline.ts
 preview.html
 
 bun.lock

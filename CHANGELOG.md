@@ -5,6 +5,31 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.8.0] - 2026-04-04
+
+### Added
+
+- **Scroll-to-Top Button** - A floating button appears on the page to quickly scroll back to the top
+- **Mobile Top Bar** - Redesigned mobile navigation with a topbar showing the docs title and a
+  config button alongside the menu toggle
+- **Sidebar Brand & Footer** - Sidebar now displays the docs title as a brand label in the header
+  and a GitHub link in a new footer section
+- **Type Indicator Dots** - Sidebar links now show a colored dot indicating the procedure type
+  (query/mutation) at a glance
+- **Header Pill Badge** - The main header subtitle uses a styled "tRPC" pill badge for a cleaner
+  look
+- **`__internal` Exports** - Internal helper functions are now exported under `__internal` from
+  `collect-routes.ts` to support white-box unit testing
+
+### Changed
+
+- **UI Design Refresh** - Comprehensive CSS update introducing a unified `--brand-*` color token
+  system, refined button styles, improved spacing, and updated font stacks across all components
+- **Search Filter Bar** - Moved outside the `<header>` element for better layout flow; results count
+  and clear-filters button reordered within the controls area
+
+---
+
 ## [0.7.0] - 2026-03-15
 
 ### Added
