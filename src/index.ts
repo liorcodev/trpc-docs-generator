@@ -7,6 +7,6 @@
  * @packageDocumentation
  */
 
-export { collectRoutes, type RouteInfo } from './collect-routes';
-export { generateDocsHtml } from './generate-html';
-export { type RouteMeta, type DocsGeneratorOptions } from './types';
+export { collectRoutes, type RouteInfo } from './collect-routes.js';
+export { generateDocsHtml } from './generate-html.js';
+export { type RouteMeta, type DocsGeneratorOptions } from './types.js';

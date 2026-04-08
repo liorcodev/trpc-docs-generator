@@ -49,6 +49,7 @@
     "generate": "bun scripts/generate-preview.ts",
     "prebuild": "bun scripts/build-inline.js",
     "build": "tsc",
+    "test:esm": "node test-esm.mjs",
     "prepublishOnly": "bun run build"
   },
   "type": "module",

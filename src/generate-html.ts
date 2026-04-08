@@ -1,6 +1,6 @@
-import { RouteInfo } from './collect-routes';
-import { DocsGeneratorOptions, RouteMeta } from './types';
-import { getStyles, getScripts, getLogo } from './assets-inline';
+import { RouteInfo } from './collect-routes.js';
+import { DocsGeneratorOptions, RouteMeta } from './types.js';
+import { getStyles, getScripts, getLogo } from './assets-inline.js';
 
 /**
  * Generate beautiful HTML documentation from route information
