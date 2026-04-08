@@ -5,6 +5,32 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.9.0] - 2026-04-08
+
+### Added
+
+- **SuperJSON Transformer Support** - The test playground now fully supports tRPC routers using the
+  `superjson` transformer. Configure with `generateDocsHtml(routes, { transformer: 'superjson' })`
+  to automatically:
+  - Wrap request inputs in `{ json: ... }` format expected by superjson
+  - Unwrap response data from `{ result: { data: { json: ... } } }` structure
+  - Enable seamless testing of endpoints that return `Date` objects, `undefined`, `BigInt`, `Map`,
+    `Set`, and other non-JSON types
+  - See the new "SuperJSON Support" section in README for complete usage guide
+
+### Fixed
+
+- **Node.js Native ESM Compatibility** - Package now works correctly with Node.js native ESM
+  resolution (Node 16+, Node 22+):
+  - All relative imports now include explicit `.js` file extensions as required by the ECMAScript
+    spec
+  - Updated TypeScript config to use `"moduleResolution": "node16"` and `"module": "Node16"` for
+    proper ESM compliance
+  - Resolves `ERR_MODULE_NOT_FOUND` errors when importing the package without a bundler
+  - Fully backward compatible with existing bundler-based workflows (Vite, webpack, Rollup, etc.)
+
+---
+
 ## [0.8.0] - 2026-04-04
 
 ### Added

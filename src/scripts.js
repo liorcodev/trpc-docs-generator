@@ -388,11 +388,17 @@ async function testEndpoint(routeId, path, type) {
       headers: headers
     };
 
+    // Wrap input data if using superjson transformer
+    let serializedInput = inputData;
+    if (window.TRPC_TRANSFORMER === 'superjson' && inputData !== null && inputData !== undefined) {
+      serializedInput = { json: inputData };
+    }
+
     if (method === 'GET' && inputData) {
-      const params = new URLSearchParams({ input: JSON.stringify(inputData) });
+      const params = new URLSearchParams({ input: JSON.stringify(serializedInput) });
       url = `${url}?${params}`;
     } else if (method === 'POST') {
-      fetchOptions.body = JSON.stringify(inputData);
+      fetchOptions.body = JSON.stringify(serializedInput);
     }
 
     const response = await fetch(url, fetchOptions);
@@ -401,6 +407,19 @@ async function testEndpoint(routeId, path, type) {
     const contentType = response.headers.get('content-type');
     if (contentType && contentType.includes('application/json')) {
       data = await response.json();
+      // Unwrap superjson response if configured
+      if (
+        window.TRPC_TRANSFORMER === 'superjson' &&
+        data &&
+        typeof data === 'object' &&
+        'result' in data &&
+        data.result &&
+        'data' in data.result &&
+        data.result.data &&
+        'json' in data.result.data
+      ) {
+        data = data.result.data.json;
+      }
     } else {
       const text = await response.text();
       data = { message: text || 'No response body' };

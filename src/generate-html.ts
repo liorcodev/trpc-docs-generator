@@ -9,7 +9,7 @@ import { getStyles, getScripts, getLogo } from './assets-inline.js';
  * @returns HTML string
  */
 export function generateDocsHtml(routes: RouteInfo[], options: DocsGeneratorOptions = {}): string {
-  const { title = 'API Documentation' } = options;
+  const { title = 'API Documentation', transformer } = options;
   const groupedRoutes = groupRoutesByPrefix(routes);
 
   return `<!DOCTYPE html>
@@ -211,6 +211,9 @@ export function generateDocsHtml(routes: RouteInfo[], options: DocsGeneratorOpti
   </div>
 
   <script>
+    // tRPC transformer configuration
+    window.TRPC_TRANSFORMER = ${transformer ? `'${transformer}'` : 'undefined'};
+    
     ${getScripts()}
   </script>
 </body>

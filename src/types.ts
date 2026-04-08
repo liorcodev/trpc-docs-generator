@@ -26,4 +26,10 @@ export type RouteMeta = {
 export type DocsGeneratorOptions = {
   /** Title to display in the documentation page */
   title?: string;
+  /**
+   * Data transformer used by tRPC router
+   * Set to 'superjson' if your router uses superjson transformer
+   * This wraps requests/responses in {json: ...} format
+   */
+  transformer?: 'superjson';
 };

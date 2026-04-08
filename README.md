@@ -137,6 +137,10 @@ npm install trpc-docs-generator
 
 - `@trpc/server` ^11.0.0
 - Zod v4+ (with `toJSONSchema` support)
+- Node.js 16+ (with native ESM support)
+
+**Note:** This package uses native ESM with explicit `.js` file extensions in imports, ensuring
+compatibility with Node.js native module resolution (Node 16+, Node 22+).
 
 <br/>
 
@@ -407,6 +411,10 @@ Generates a complete HTML documentation page from route information.
 - `routes` - Array of route information from `collectRoutes()`
 - `options` - Optional configuration:
   - `title` - Page title (default: `'API Documentation'`)
+  - `transformer` - Data transformer used by tRPC router (optional)
+    - Set to `'superjson'` if your router uses the superjson transformer
+    - This ensures the test playground correctly wraps requests/responses in `{json: ...}` format
+    - See [SuperJSON Support](#superjson-support) for details
 
 **Returns:**
 
@@ -435,6 +443,67 @@ type RouteMeta = {
   };
 };
 ```
+
+<br/>
+
+## SuperJSON Support
+
+If your tRPC router uses the [superjson transformer](https://trpc.io/docs/data-transformers), you
+need to configure the docs generator to match. SuperJSON wraps requests/responses in a special
+format (`{json: ...}`) to support JavaScript types that standard JSON doesn't handle (Date,
+undefined, BigInt, Map, Set, etc.).
+
+### Usage with SuperJSON
+
+```typescript
+import { initTRPC } from '@trpc/server';
+import superjson from 'superjson';
+import { collectRoutes, generateDocsHtml } from 'trpc-docs-generator';
+
+// Your tRPC router with superjson transformer
+const t = initTRPC.create({
+  transformer: superjson // Using superjson
+});
+
+const appRouter = t.router({
+  getEvent: t.procedure.input(z.object({ id: z.string() })).query(() => ({
+    id: '123',
+    name: 'Conference',
+    startDate: new Date() // Date objects work with superjson!
+  }))
+});
+
+// Generate docs WITH superjson support
+const routes = collectRoutes(appRouter);
+const html = generateDocsHtml(routes, {
+  title: 'My API Documentation',
+  transformer: 'superjson' // Enable superjson in test playground
+});
+```
+
+### What This Does
+
+**Without** `transformer: 'superjson'`:
+
+- Request: `{"id": "123"}`
+- Your superjson-enabled tRPC server expects: `{"json": {"id": "123"}}`
+- Result: ❌ **Request fails** with "Invalid input: expected object, received undefined"
+
+**With** `transformer: 'superjson'`:
+
+- Request: `{"json": {"id": "123"}}`
+- Response unwrapping: Automatically extracts data from `{result: {data: {json: {...}}}}`
+- Result: ✅ **Everything works perfectly**
+
+### When to Use
+
+Enable `transformer: 'superjson'` if your tRPC router:
+
+- Uses `superjson` transformer in `initTRPC.create({ transformer: superjson })`
+- Returns Date objects, undefined values, BigInt, Map, Set, or other non-JSON types
+- Is configured with any custom transformer that wraps data
+
+If you're using standard JSON (no transformer), you don't need this option.
 
 <br/>
 
