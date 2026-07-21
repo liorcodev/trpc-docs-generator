@@ -189,7 +189,13 @@ const appRouter = t.router({
           tags: ['Auth']
         }
       })
-      .input(z.object({ email: z.email(), password: z.string() }))
+      .input(
+        z.object({
+          email: z.email().describe('Email address used to sign in'),
+          password: z.string().describe('Account password'),
+          rememberMe: z.boolean().optional().describe('Keep session alive for 30 days')
+        })
+      )
       .output(
         z.object({
           token: z.string(),

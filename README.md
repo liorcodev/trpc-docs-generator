@@ -46,6 +46,9 @@ router with zero configuration. Not only does it document your API, but it also 
 - 🧠 **Smart Schema Inference** - Automatically extracts types from Zod validators
 - 📝 **Auto-Filled Examples** - Pre-filled JSON with required fields, click to add optional fields
 - 🔐 **Header Management** - Add custom headers (auth tokens, etc.), save and reuse them
+- 📋 **Ready-to-Copy Snippets** - cURL, fetch, and tRPC client code generated for every endpoint
+- ✅ **Response Validation** - Live responses checked against the documented output schema
+- 🕘 **Request History** - Past requests saved per endpoint, replay any of them with one click
 - 🌐 **Deploy Anywhere** - Works with Express, Next.js, Cloudflare Workers, and more
 
 <br/>
@@ -93,6 +96,39 @@ Powered by Zod's `toJSONSchema()` method, the generator automatically:
 - Handles complex types (unions, intersections, arrays, enums, records)
 - **Date fields** - `z.date()` and `z.coerce.date()` are represented as ISO 8601 strings
   (`{ type: "string", format: "date-time" }`), matching how tRPC transports dates over the wire
+- **Field Descriptions** - `.describe()` text on Zod schemas is preserved as an inline `// comment`
+  in the generated TypeScript output
+
+### 📋 Code Snippets (cURL, fetch, tRPC Client)
+
+Every endpoint includes ready-to-copy code snippets in three formats, generated from the same
+example data used to pre-fill the test panel:
+
+- **cURL** - shell command with proper query-string encoding for GET requests
+- **fetch** - plain `fetch()` snippet for browsers or Node
+- **tRPC Client** - typed `@trpc/client` call using `createTRPCClient`
+- Automatically respects the `superjson` transformer option, wrapping payloads in `{ json: ... }`
+  when enabled
+- Also available programmatically via `generateSnippets()`, `generateCurlSnippet()`,
+  `generateFetchSnippet()`, and `generateTrpcClientSnippet()`
+
+### ✅ Response Schema Validation
+
+After sending a test request, the response is automatically checked against the route's documented
+output schema:
+
+- ✅ Green confirmation when the response matches the schema
+- ⚠️ A list of specific mismatches (missing fields, wrong types, disallowed values) when it doesn't
+- Powered by the standalone `validateAgainstSchema()` export, usable outside the generated docs too
+
+### 🕘 Request History
+
+Every endpoint keeps a local history of its test requests:
+
+- Automatically records the timestamp, input, and response status for each request you send
+- Click any past entry to replay it - refills the request panel with that entry's input
+- Scrollable item list with an always-visible "Clear history" button
+- Stored in `localStorage`, scoped per route
 
 ### 🔍 Search & Filter System
 
@@ -419,6 +455,29 @@ Generates a complete HTML documentation page from route information.
 **Returns:**
 
 - Complete HTML string ready to serve
+
+### `generateSnippets(route: RouteInfo, options?: SnippetOptions): RouteSnippets`
+
+Generates ready-to-copy code snippets (cURL, fetch, and tRPC client) for a single route. Individual
+generators are also exported: `generateCurlSnippet()`, `generateFetchSnippet()`, and
+`generateTrpcClientSnippet()` (each returns a `string`).
+
+**Parameters:**
+
+- `route` - A single `RouteInfo` object (e.g. from `collectRoutes()`)
+- `options` - Optional configuration:
+  - `transformer` - Set to `'superjson'` to wrap payloads in `{ json: ... }`
+  - `baseUrlPlaceholder` - Token used in place of the real base URL (default `'{{BASE_URL}}'`)
+
+**Returns:**
+
+- `RouteSnippets` - `{ curl: string; fetch: string; trpcClient: string }`
+
+### `validateAgainstSchema(data: unknown, schema: JSONSchema, path?: string): string[]`
+
+Validates arbitrary data against a JSON Schema object (as produced by `collectRoutes()`), returning
+an array of human-readable mismatch descriptions. An empty array means `data` matches the schema.
+Used internally to validate live responses in the test playground; also exported for standalone use.
 
 ### `RouteMeta` Type
 

@@ -15,6 +15,23 @@ const router = t.router({
   enumField: t.procedure.input(z.object({ v: z.enum(['a', 'b', 'c']) })).query(() => ''),
   objField: t.procedure
     .input(z.object({ v: z.object({ x: z.number(), y: z.string().optional() }) }))
+    .query(() => ''),
+  describedField: t.procedure
+    .input(
+      z.object({
+        identifier: z.string().describe('Email address or phone number'),
+        password: z.string().describe('Account password'),
+        rememberMe: z.boolean().optional().describe('Keep session alive for 30 days'),
+        plain: z.string()
+      })
+    )
+    .query(() => ''),
+  describedIntersection: t.procedure
+    .input(
+      z
+        .object({ id: z.number().describe('Unique identifier') })
+        .and(z.object({ name: z.string().describe('Display name') }))
+    )
     .query(() => '')
 });
 
@@ -50,5 +67,23 @@ describe('TypeScript type generation', () => {
 
   test('object field has ? marker for optional properties', () => {
     expect(inputTypeScript(collectRoutes(router), 'objField')).toMatch(/y\?/);
+  });
+
+  test('.describe() text is appended as an inline // comment', () => {
+    const ts = inputTypeScript(collectRoutes(router), 'describedField');
+    expect(ts).toContain('identifier: string  // Email address or phone number');
+    expect(ts).toContain('password: string  // Account password');
+    expect(ts).toContain('rememberMe?: boolean  // Keep session alive for 30 days');
+  });
+
+  test('fields without .describe() get no trailing comment', () => {
+    const ts = inputTypeScript(collectRoutes(router), 'describedField');
+    expect(ts).toMatch(/plain: string$/m);
+  });
+
+  test('.describe() text is preserved for merged intersection properties', () => {
+    const ts = inputTypeScript(collectRoutes(router), 'describedIntersection');
+    expect(ts).toContain('id: number  // Unique identifier');
+    expect(ts).toContain('name: string  // Display name');
   });
 });

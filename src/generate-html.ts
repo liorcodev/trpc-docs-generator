@@ -1,6 +1,7 @@
 import { RouteInfo } from './collect-routes.js';
 import { DocsGeneratorOptions, RouteMeta } from './types.js';
 import { getStyles, getScripts, getLogo } from './assets-inline.js';
+import { generateSnippets } from './generate-snippets.js';
 
 /**
  * Generate beautiful HTML documentation from route information
@@ -201,7 +202,7 @@ export function generateDocsHtml(routes: RouteInfo[], options: DocsGeneratorOpti
             ([group, groupRoutes]) => `
           <section class="route-group" id="group-${group}">
             <h2 class="route-group-header">${formatGroupName(group)}</h2>
-            ${groupRoutes.map(route => generateRouteCard(route)).join('')}
+            ${groupRoutes.map(route => generateRouteCard(route, transformer)).join('')}
           </section>
         `
           )
@@ -254,9 +255,13 @@ function formatGroupName(group: string): string {
     .join(' › ');
 }
 
-function generateRouteCard(route: RouteInfo): string {
+function generateRouteCard(
+  route: RouteInfo,
+  transformer?: DocsGeneratorOptions['transformer']
+): string {
   const docs = route.meta?.docs as RouteMeta['docs'];
   const routeId = route.path.replace(/\./g, '-');
+  const snippets = generateSnippets(route, { transformer });
 
   // Prepare searchable text and filter attributes
   const searchableText = [
@@ -347,6 +352,36 @@ function generateRouteCard(route: RouteInfo): string {
               : ''
           }
 
+          <div class="route-section">
+            <div class="route-section-title"><span class="iconify" data-icon="mdi:code-tags" style="vertical-align: -0.125em; margin-right: 0.5rem;"></span>Code Examples</div>
+            <div class="snippet-tabs" role="tablist">
+              <button class="snippet-tab active" type="button" data-snippet-tab="curl" onclick="switchSnippetTab('curl', this)">cURL</button>
+              <button class="snippet-tab" type="button" data-snippet-tab="fetch" onclick="switchSnippetTab('fetch', this)">fetch</button>
+              <button class="snippet-tab" type="button" data-snippet-tab="trpcClient" onclick="switchSnippetTab('trpcClient', this)">tRPC Client</button>
+            </div>
+            <div class="schema-block snippet-panel" data-snippet-panel="curl">
+              <div class="schema-block-header">
+                <span class="schema-lang-label">Shell</span>
+                <button class="copy-btn" onclick="copySchema(this)">Copy</button>
+              </div>
+              <pre data-base-url-template="true">${escapeHtml(snippets.curl)}</pre>
+            </div>
+            <div class="schema-block snippet-panel" data-snippet-panel="fetch" style="display: none;">
+              <div class="schema-block-header">
+                <span class="schema-lang-label">JavaScript</span>
+                <button class="copy-btn" onclick="copySchema(this)">Copy</button>
+              </div>
+              <pre data-base-url-template="true">${escapeHtml(snippets.fetch)}</pre>
+            </div>
+            <div class="schema-block snippet-panel" data-snippet-panel="trpcClient" style="display: none;">
+              <div class="schema-block-header">
+                <span class="schema-lang-label">TypeScript</span>
+                <button class="copy-btn" onclick="copySchema(this)">Copy</button>
+              </div>
+              <pre data-base-url-template="true">${escapeHtml(snippets.trpcClient)}</pre>
+            </div>
+          </div>
+
           <div class="test-panel">
             <div class="test-panel-header">
               <div class="test-panel-title">
@@ -420,12 +455,21 @@ function generateRouteCard(route: RouteInfo): string {
                 : ''
             }
 
-            <button class="btn-primary" onclick="testEndpoint('${routeId}', '${route.path}', '${route.type}')" id="test-btn-${routeId}">
-              <span class="iconify" data-icon="mdi:send" style="width: 18px; height: 18px;"></span>
-              Send Request
-            </button>
+            <div class="test-actions-row">
+              <button class="btn-primary" onclick="testEndpoint('${routeId}', '${route.path}', '${route.type}')" id="test-btn-${routeId}">
+                <span class="iconify" data-icon="mdi:send" style="width: 18px; height: 18px;"></span>
+                Send Request
+              </button>
+              <div class="history-dropdown-wrapper">
+                <button class="btn-add history-btn" onclick="toggleHistoryDropdown('${routeId}', '${route.path}', '${route.type}')" id="history-btn-${routeId}">
+                  <span class="iconify" data-icon="mdi:history" style="width: 14px; height: 14px;"></span>
+                  History
+                </button>
+                <div id="history-dropdown-${routeId}" class="history-dropdown" style="display: none;"></div>
+              </div>
+            </div>
 
-            <div id="response-${routeId}" class="response-container" style="display: none;"></div>
+            <div id="response-${routeId}" class="response-container" data-output-schema="${escapeHtml(route.outputSchema ?? '')}" style="display: none;"></div>
             </div>
           </div>
         </div>

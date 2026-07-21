@@ -9,4 +9,13 @@
 
 export { collectRoutes, type RouteInfo } from './collect-routes.js';
 export { generateDocsHtml } from './generate-html.js';
+export {
+  generateSnippets,
+  generateCurlSnippet,
+  generateFetchSnippet,
+  generateTrpcClientSnippet,
+  type SnippetOptions,
+  type RouteSnippets
+} from './generate-snippets.js';
+export { validateAgainstSchema } from './validate-schema.js';
 export { type RouteMeta, type DocsGeneratorOptions } from './types.js';

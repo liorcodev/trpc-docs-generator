@@ -887,6 +887,41 @@ header h1 {
   background: transparent;
 }
 
+/* ── Code Snippet Tabs ───────────────────────────────────────── */
+.snippet-tabs {
+  display: flex;
+  gap: 0.375rem;
+  margin-bottom: 0.5rem;
+}
+
+.snippet-tab {
+  padding: 0.3125rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #8b949e;
+  background: transparent;
+  border: 1px solid #30363d;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  font-family: 'Inter', sans-serif;
+}
+
+.snippet-tab:hover {
+  color: #c9d1d9;
+  border-color: #6e7681;
+}
+
+.snippet-tab.active {
+  color: #fff;
+  background: var(--brand-500, #5a67d8);
+  border-color: var(--brand-500, #5a67d8);
+}
+
+.snippet-panel + .snippet-panel {
+  margin-top: 0.5rem;
+}
+
 /* ── Auth Info ───────────────────────────────────────────────── */
 .auth-info {
   display: flex;
@@ -1108,6 +1143,132 @@ header h1 {
   transform: translateY(0);
 }
 
+.test-actions-row {
+  display: flex;
+  align-items: stretch;
+  gap: 0.5rem;
+}
+
+.test-actions-row .btn-primary {
+  width: auto;
+  flex: 1;
+}
+
+.history-dropdown-wrapper {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.history-btn {
+  height: 100%;
+  white-space: nowrap;
+}
+
+.history-dropdown {
+  /* top/left/bottom/max-height are computed and set inline by
+     positionHistoryDropdown() in scripts.js — the element is moved to
+     <body> and fixed-positioned so it can never be clipped by an
+     ancestor's overflow: hidden (e.g. the rounded-corner clipping on
+     .route-card), and its height is clamped to whatever viewport space is
+     actually available. */
+  position: fixed;
+  z-index: 1000;
+  width: 280px;
+  max-height: 320px;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-card);
+  border: 1px solid var(--border-light);
+  border-radius: 8px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+  padding: 0.375rem;
+}
+
+.history-items {
+  overflow-y: auto;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.history-empty {
+  padding: 1rem 0.75rem;
+  text-align: center;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.history-item {
+  padding: 0.5rem 0.625rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.12s ease;
+}
+
+.history-item:hover {
+  background: var(--bg-secondary);
+}
+
+.history-item + .history-item {
+  margin-top: 0.125rem;
+}
+
+.history-item-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.25rem;
+}
+
+.history-item-status {
+  font-size: 0.6875rem;
+  font-weight: 700;
+}
+
+.history-item-status.success {
+  color: var(--success-600);
+}
+
+.history-item-status.error {
+  color: var(--danger-600);
+}
+
+.history-item-time {
+  font-size: 0.6875rem;
+  color: var(--text-muted);
+}
+
+.history-item-preview {
+  font-family: 'SF Mono', 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+  font-size: 0.6875rem;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.history-footer {
+  border-top: 1px solid var(--border-light);
+  margin-top: 0.375rem;
+  padding-top: 0.375rem;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.history-clear-btn {
+  border: none;
+  background: transparent;
+  color: var(--danger-500);
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0.25rem 0.5rem;
+}
+
+.history-clear-btn:hover {
+  text-decoration: underline;
+}
+
 .btn-primary:disabled {
   opacity: 0.6;
   cursor: not-allowed;
@@ -1235,6 +1396,42 @@ header h1 {
   background: var(--danger-50);
   color: var(--danger-600);
   border: 1px solid var(--danger-100);
+}
+
+.schema-validation {
+  display: block;
+  padding: 0.4375rem 0.875rem;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  margin-bottom: 0.625rem;
+}
+
+.schema-validation .iconify {
+  vertical-align: -0.125em;
+  margin-right: 0.375rem;
+}
+
+.schema-validation.valid {
+  background: var(--success-50);
+  color: var(--success-600);
+  border: 1px solid var(--success-100);
+}
+
+.schema-validation.invalid {
+  background: var(--warning-50);
+  color: var(--warning-600);
+  border: 1px solid var(--warning-100);
+}
+
+.schema-validation-issues {
+  list-style: disc;
+  margin: 0.5rem 0 0;
+  padding-left: 1.25rem;
+  font-weight: 400;
+  font-family: 'SF Mono', 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+  font-size: 0.6875rem;
+  line-height: 1.6;
 }
 
 .response-block {

@@ -210,6 +210,7 @@ function saveBaseUrl() {
 
   localStorage.setItem('trpc-base-url', baseUrl);
   updateConfigButton();
+  updateSnippetBaseUrls();
   closeConfigModal();
 }
 
@@ -227,8 +228,31 @@ document.getElementById('configModal')?.addEventListener('click', e => {
   }
 });
 
+// Code snippet tabs (cURL / fetch / tRPC Client)
+window.switchSnippetTab = function (tabName, btn) {
+  const section = btn.closest('.route-section');
+  if (!section) return;
+  section.querySelectorAll('.snippet-tab').forEach(tab => tab.classList.remove('active'));
+  btn.classList.add('active');
+  section.querySelectorAll('.snippet-panel').forEach(panel => {
+    panel.style.display = panel.dataset.snippetPanel === tabName ? '' : 'none';
+  });
+};
+
+// Substitute the {{BASE_URL}} placeholder in code snippets with the configured base URL
+function updateSnippetBaseUrls() {
+  const baseUrl = localStorage.getItem('trpc-base-url') || '{{BASE_URL}}';
+  document.querySelectorAll('pre[data-base-url-template="true"]').forEach(pre => {
+    if (pre.dataset.originalText === undefined) {
+      pre.dataset.originalText = pre.textContent;
+    }
+    pre.textContent = pre.dataset.originalText.split('{{BASE_URL}}').join(baseUrl);
+  });
+}
+
 // Initialize config button state
 updateConfigButton();
+updateSnippetBaseUrls();
 
 // Header management functions
 function addHeader(routeId) {
@@ -322,7 +346,269 @@ function loadHeaders(routeId) {
   }
 }
 
+// ── Per-endpoint request history ────────────────────────────────
+const MAX_HISTORY_ENTRIES = 10;
+
+function getRequestHistory(routeId) {
+  try {
+    const saved = localStorage.getItem('trpc-history-' + routeId);
+    return saved ? JSON.parse(saved) : [];
+  } catch (e) {
+    return [];
+  }
+}
+
+function saveRequestHistory(routeId, entry) {
+  const history = getRequestHistory(routeId);
+  history.unshift(entry);
+  localStorage.setItem(
+    'trpc-history-' + routeId,
+    JSON.stringify(history.slice(0, MAX_HISTORY_ENTRIES))
+  );
+}
+
+function clearRequestHistory(routeId, event) {
+  if (event) event.stopPropagation();
+  localStorage.removeItem('trpc-history-' + routeId);
+  const dropdown = document.getElementById('history-dropdown-' + routeId);
+  if (dropdown) dropdown.innerHTML = renderHistoryList(routeId);
+}
+
+function formatHistoryTimestamp(ts) {
+  const date = new Date(ts);
+  return (
+    date.toLocaleDateString([], { month: 'short', day: 'numeric' }) +
+    ' ' +
+    date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+  );
+}
+
+function renderHistoryList(routeId) {
+  const history = getRequestHistory(routeId);
+  if (history.length === 0) {
+    return '<div class="history-empty">No requests sent yet</div>';
+  }
+
+  const items = history
+    .map((entry, index) => {
+      const statusClass = entry.ok ? 'success' : 'error';
+      const statusLabel = entry.status ? entry.status + ' ' + entry.statusText : 'Failed';
+      const hasBody = entry.input !== null && entry.input !== undefined;
+      const preview = hasBody ? escapeHtml(JSON.stringify(entry.input)).slice(0, 60) : '(no body)';
+      return `
+        <div class="history-item" onclick="replayHistoryEntry('${routeId}', ${index})">
+          <div class="history-item-meta">
+            <span class="history-item-status ${statusClass}">${statusLabel}</span>
+            <span class="history-item-time">${formatHistoryTimestamp(entry.timestamp)}</span>
+          </div>
+          <div class="history-item-preview">${preview}</div>
+        </div>
+      `;
+    })
+    .join('');
+
+  return `
+    <div class="history-items">${items}</div>
+    <div class="history-footer">
+      <button class="history-clear-btn" onclick="clearRequestHistory('${routeId}', event)">Clear history</button>
+    </div>
+  `;
+}
+
+function positionHistoryDropdown(dropdown, btn) {
+  // Anchor with fixed coordinates and move to <body> so no ancestor's
+  // overflow: hidden (e.g. .route-card's rounded-corner clipping) can hide it.
+  if (dropdown.parentElement !== document.body) {
+    document.body.appendChild(dropdown);
+  }
+  const rect = btn.getBoundingClientRect();
+  const width = dropdown.offsetWidth || 280;
+  const left = Math.min(rect.right - width, window.innerWidth - width - 8);
+  const margin = 8;
+  const spaceBelow = window.innerHeight - rect.bottom - margin - 6;
+  const spaceAbove = rect.top - margin - 6;
+  const preferredMaxHeight = 320;
+
+  dropdown.style.position = 'fixed';
+  dropdown.style.left = Math.max(8, left) + 'px';
+
+  if (spaceBelow >= Math.min(160, preferredMaxHeight) || spaceBelow >= spaceAbove) {
+    // Open downward, capped to whatever room is actually available.
+    dropdown.style.top = rect.bottom + 6 + 'px';
+    dropdown.style.bottom = '';
+    dropdown.style.maxHeight = Math.max(120, Math.min(preferredMaxHeight, spaceBelow)) + 'px';
+  } else {
+    // Not enough room below — open upward instead.
+    dropdown.style.top = '';
+    dropdown.style.bottom = window.innerHeight - rect.top + 6 + 'px';
+    dropdown.style.maxHeight = Math.max(120, Math.min(preferredMaxHeight, spaceAbove)) + 'px';
+  }
+}
+
+function toggleHistoryDropdown(routeId, path, type) {
+  const dropdown = document.getElementById('history-dropdown-' + routeId);
+  const btn = document.getElementById('history-btn-' + routeId);
+  if (!dropdown || !btn) return;
+
+  const isOpen = dropdown.style.display === 'flex';
+
+  // Close any open history dropdowns
+  document.querySelectorAll('.history-dropdown').forEach(el => {
+    el.style.display = 'none';
+  });
+  if (isOpen) return;
+
+  dropdown.dataset.path = path;
+  dropdown.dataset.type = type;
+  dropdown.innerHTML = renderHistoryList(routeId);
+  positionHistoryDropdown(dropdown, btn);
+  dropdown.style.display = 'flex';
+}
+
+function replayHistoryEntry(routeId, index) {
+  const history = getRequestHistory(routeId);
+  const entry = history[index];
+  if (!entry) return;
+
+  const inputField = document.getElementById('input-' + routeId);
+  if (inputField) {
+    inputField.value =
+      entry.input !== null && entry.input !== undefined ? JSON.stringify(entry.input, null, 2) : '';
+  }
+
+  const dropdown = document.getElementById('history-dropdown-' + routeId);
+  const path = dropdown ? dropdown.dataset.path : '';
+  const type = dropdown ? dropdown.dataset.type : '';
+  if (dropdown) dropdown.style.display = 'none';
+
+  testEndpoint(routeId, path, type);
+}
+
+// Close history dropdowns when clicking outside of them (dropdowns may live
+// under <body> once opened, so match by id instead of DOM containment).
+document.addEventListener('click', e => {
+  document.querySelectorAll('.history-dropdown').forEach(dropdown => {
+    if (dropdown.style.display === 'none') return;
+    const routeId = dropdown.id.replace('history-dropdown-', '');
+    const btn = document.getElementById('history-btn-' + routeId);
+    if (!dropdown.contains(e.target) && !(btn && btn.contains(e.target))) {
+      dropdown.style.display = 'none';
+    }
+  });
+});
+
+// Close history dropdowns on scroll/resize since their position is computed
+// once at open time and would otherwise go stale. Ignore scroll events that
+// originate from inside a dropdown itself (e.g. scrolling the history list),
+// since those don't move the dropdown's anchor and shouldn't close it.
+window.addEventListener(
+  'scroll',
+  e => {
+    if (e.target && e.target.nodeType === 1 && e.target.closest('.history-dropdown')) return;
+    document.querySelectorAll('.history-dropdown').forEach(el => {
+      el.style.display = 'none';
+    });
+  },
+  true
+);
+window.addEventListener('resize', () => {
+  document.querySelectorAll('.history-dropdown').forEach(el => {
+    el.style.display = 'none';
+  });
+});
+
 // Endpoint testing function
+// ── Response schema validation ─────────────────────────────────
+function schemaTypeOf(value) {
+  if (value === null) return 'null';
+  if (Array.isArray(value)) return 'array';
+  return typeof value;
+}
+
+function sameSchemaValue(a, b) {
+  return JSON.stringify(a) === JSON.stringify(b);
+}
+
+function validateAgainstSchema(data, schema, path) {
+  path = path || '$';
+  if (!schema || typeof schema !== 'object') return [];
+
+  if (schema.const !== undefined) {
+    return sameSchemaValue(data, schema.const)
+      ? []
+      : [
+          path +
+            ': expected constant ' +
+            JSON.stringify(schema.const) +
+            ', got ' +
+            JSON.stringify(data)
+        ];
+  }
+
+  if (Array.isArray(schema.enum)) {
+    return schema.enum.some(v => sameSchemaValue(v, data))
+      ? []
+      : [
+          path +
+            ': expected one of ' +
+            JSON.stringify(schema.enum) +
+            ', got ' +
+            JSON.stringify(data)
+        ];
+  }
+
+  if (Array.isArray(schema.allOf)) {
+    return schema.allOf.reduce(
+      (acc, sub) => acc.concat(validateAgainstSchema(data, sub, path)),
+      []
+    );
+  }
+
+  if (Array.isArray(schema.oneOf) || Array.isArray(schema.anyOf)) {
+    const variants = schema.oneOf || schema.anyOf;
+    const matchesAny = variants.some(sub => validateAgainstSchema(data, sub, path).length === 0);
+    return matchesAny ? [] : [path + ': does not match any allowed variant'];
+  }
+
+  if (!schema.type) return [];
+
+  const expectedTypes = Array.isArray(schema.type) ? schema.type : [schema.type];
+  const actualType = schemaTypeOf(data);
+  const actualTypeAliases =
+    actualType === 'number' && Number.isInteger(data) ? ['number', 'integer'] : [actualType];
+
+  if (!expectedTypes.some(t => actualTypeAliases.includes(t))) {
+    return [path + ': expected type ' + expectedTypes.join(' | ') + ', got ' + actualType];
+  }
+
+  let issues = [];
+
+  if (expectedTypes.includes('object') && actualType === 'object') {
+    (schema.required || []).forEach(key => {
+      if (!(key in data)) {
+        issues.push(path + '.' + key + ': missing required field');
+      }
+    });
+    if (schema.properties) {
+      Object.keys(schema.properties).forEach(key => {
+        if (key in data) {
+          issues = issues.concat(
+            validateAgainstSchema(data[key], schema.properties[key], path + '.' + key)
+          );
+        }
+      });
+    }
+  }
+
+  if (expectedTypes.includes('array') && actualType === 'array' && schema.items) {
+    data.forEach((item, index) => {
+      issues = issues.concat(validateAgainstSchema(item, schema.items, path + '[' + index + ']'));
+    });
+  }
+
+  return issues;
+}
+
 async function testEndpoint(routeId, path, type) {
   const responseContainer = document.getElementById('response-' + routeId);
   const testBtn = document.getElementById('test-btn-' + routeId);
@@ -427,6 +713,42 @@ async function testEndpoint(routeId, path, type) {
 
     const isSuccess = response.ok;
 
+    // Validate the response against the route's documented output schema (success only)
+    let schemaValidationHtml = '';
+    const outputSchemaJson = responseContainer.dataset.outputSchema;
+    if (isSuccess && outputSchemaJson) {
+      try {
+        const outputSchema = JSON.parse(outputSchemaJson);
+        const issues = validateAgainstSchema(data, outputSchema).slice(0, 20);
+        schemaValidationHtml =
+          issues.length > 0
+            ? `
+          <div class="schema-validation invalid">
+            <span class="iconify" data-icon="mdi:alert-circle-outline" style="width: 14px; height: 14px;"></span>
+            ${issues.length} schema mismatch${issues.length > 1 ? 'es' : ''} found
+            <ul class="schema-validation-issues">${issues.map(i => `<li>${escapeHtml(i)}</li>`).join('')}</ul>
+          </div>
+        `
+            : `
+          <div class="schema-validation valid">
+            <span class="iconify" data-icon="mdi:check-circle-outline" style="width: 14px; height: 14px;"></span>
+            Response matches the documented output schema
+          </div>
+        `;
+      } catch (e) {
+        // Ignore malformed/unparseable schema; skip validation feedback
+      }
+    }
+
+    // Record this request/response pair in the per-route history
+    saveRequestHistory(routeId, {
+      timestamp: Date.now(),
+      input: inputData,
+      status: response.status,
+      statusText: response.statusText,
+      ok: isSuccess
+    });
+
     // Build debug info
     const debugInfo = `Request Details:
 URL: ${url}
@@ -442,12 +764,21 @@ Body: ${method === 'POST' ? JSON.stringify(inputData, null, 2) : 'N/A (sent as q
         <span class="iconify" data-icon="mdi:${isSuccess ? 'check-circle' : 'alert-circle'}" style="width: 16px; height: 16px;"></span>
         ${isSuccess ? 'Success' : 'Error'} (${response.status} ${response.statusText})
       </div>
+      ${schemaValidationHtml}
       <div class="response-block">
         <pre>${!isSuccess ? debugInfo : ''}${escapeHtml(JSON.stringify(data, null, 2))}</pre>
       </div>
     `;
     responseContainer.style.display = 'block';
   } catch (error) {
+    saveRequestHistory(routeId, {
+      timestamp: Date.now(),
+      input: inputData,
+      status: null,
+      statusText: 'Request Failed',
+      ok: false
+    });
+
     responseContainer.innerHTML = `
       <div class="response-status error">
         <span class="iconify" data-icon="mdi:alert-circle" style="width: 16px; height: 16px;"></span>
@@ -474,6 +805,9 @@ window.removeHeader = removeHeader;
 window.saveHeaders = saveHeaders;
 window.loadHeaders = loadHeaders;
 window.testEndpoint = testEndpoint;
+window.toggleHistoryDropdown = toggleHistoryDropdown;
+window.replayHistoryEntry = replayHistoryEntry;
+window.clearRequestHistory = clearRequestHistory;
 window.escapeHtml = function (str) {
   const div = document.createElement('div');
   div.textContent = str;
