@@ -5,6 +5,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.11.0] - 2026-09-23
+
+### Added
+
+- **`defaultBaseURL` option** - `generateDocsHtml(routes, { defaultBaseURL: '...' })` pre-fills the
+  testing playground's Base URL so consumers don't have to manually configure it every time (handy
+  when the docs only ever run against one known address, e.g. local dev). A base URL a user
+  explicitly saves via the config modal still takes precedence over this default.
+
+### Fixed
+
+- **Zod v4.6+ compacted union/nullable schemas** - `toJSONSchema()` now represents simple unions and
+  `.nullable()`/`.nullish()` fields as a `type: [...]` array instead of `anyOf`, which was causing
+  affected fields to fall back to `any` in generated examples and TypeScript types. Example and
+  TypeScript generation now handle the `type` array form correctly.
+
+---
+
 ## [0.10.0] - 2026-07-21
 
 ### Added
@@ -279,9 +297,3 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - `Removed` - Removed features
 - `Fixed` - Bug fixes
 - `Security` - Vulnerability fixes
-
-[Unreleased]: https://github.com/liorcohen/trpc-docs-generator/compare/v0.5.2...HEAD
-[0.5.2]: https://github.com/liorcohen/trpc-docs-generator/compare/v0.5.1...v0.5.2
-[0.5.1]: https://github.com/liorcohen/trpc-docs-generator/compare/v0.5.0...v0.5.1
-[0.5.0]: https://github.com/liorcohen/trpc-docs-generator/releases/tag/v0.5.0
-[0.1.0]: https://github.com/liorcohen/trpc-docs-generator/releases/tag/v0.1.0

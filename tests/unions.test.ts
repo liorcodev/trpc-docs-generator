@@ -15,7 +15,8 @@ const router = t.router({
 describe('union types', () => {
   test('z.union() → anyOf or oneOf in JSON schema', () => {
     const prop = inputSchema(collectRoutes(router), 'strOrNum').properties.v;
-    expect(prop.anyOf || prop.oneOf).toBeTruthy();
+    // Zod v4.6+ compacts a union of bare types into `type: [...]` instead of `anyOf`.
+    expect(prop.anyOf || prop.oneOf || Array.isArray(prop.type)).toBeTruthy();
   });
 
   test('z.union() example uses the first variant', () => {
@@ -26,13 +27,21 @@ describe('union types', () => {
   test('z.string().nullable() schema allows null', () => {
     const prop = inputSchema(collectRoutes(router), 'nullable').properties.v;
     const variants = prop.anyOf ?? prop.oneOf ?? [prop];
-    expect(variants.some((s: any) => s.type === 'null')).toBe(true);
+    expect(
+      variants.some(
+        (s: any) => s.type === 'null' || (Array.isArray(s.type) && s.type.includes('null'))
+      )
+    ).toBe(true);
   });
 
   test('z.string().nullish() schema allows null', () => {
     const prop = inputSchema(collectRoutes(router), 'nullish').properties.v;
     const variants = prop.anyOf ?? prop.oneOf ?? [prop];
-    expect(variants.some((s: any) => s.type === 'null')).toBe(true);
+    expect(
+      variants.some(
+        (s: any) => s.type === 'null' || (Array.isArray(s.type) && s.type.includes('null'))
+      )
+    ).toBe(true);
   });
 
   test('z.union() TypeScript type uses |', () => {

@@ -160,6 +160,14 @@ function generateJSONExample(
     return generateJSONExample(schema.anyOf[0], depth, includeOptional);
   }
 
+  // Handle compacted primitive unions - Zod v4.6+ toJSONSchema() optimizes a union of bare
+  // types (e.g. `.nullable()`, `z.union([z.string(), z.number()])`) into `type: [...]` instead
+  // of `anyOf`. Pick the first non-null type as the representative example, like the anyOf case.
+  if (Array.isArray(schema.type) && schema.type.length > 0) {
+    const preferredType = schema.type.find((t: string) => t !== 'null') ?? schema.type[0];
+    return generateJSONExample({ ...schema, type: preferredType }, depth, includeOptional);
+  }
+
   switch (schema.type) {
     case 'object': {
       // Handle z.record() - uses additionalProperties instead of properties
@@ -323,6 +331,15 @@ function generateTypeScriptExample(schema: any, depth: number = 0): string {
   if (schema.anyOf && Array.isArray(schema.anyOf) && schema.anyOf.length > 0) {
     const types = schema.anyOf.map((s: any) => generateTypeScriptExample(s, depth));
     return types.join(' | ');
+  }
+
+  // Handle compacted primitive unions - Zod v4.6+ toJSONSchema() optimizes a union of bare
+  // types (e.g. `.nullable()`, `z.union([z.string(), z.number()])`) into `type: [...]`.
+  if (Array.isArray(schema.type) && schema.type.length > 0) {
+    const types = schema.type.map((t: string) =>
+      generateTypeScriptExample({ ...schema, type: t }, depth)
+    );
+    return [...new Set(types)].join(' | ');
   }
 
   switch (schema.type) {

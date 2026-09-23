@@ -274,7 +274,8 @@ Every endpoint in the generated docs includes a **fully functional testing panel
 
 1. **Open the docs** - Navigate to your `/docs` endpoint
 2. **Configure base URL** - Click the gear icon (top-right) and enter your tRPC endpoint (e.g.,
-   `http://127.0.0.1:8787/trpc` see <a href="#troubleshooting">Troubleshooting</a>)
+   `http://127.0.0.1:8787/trpc` see <a href="#troubleshooting">Troubleshooting</a>). Skip this step
+   if the docs were generated with a `defaultBaseURL` (see [API Reference](#api-reference)).
 3. **Click any endpoint** - Expand the route card to see the testing panel
 4. **Edit the request** - Pre-filled JSON is ready, modify as needed or click badges to add optional
    fields
@@ -447,6 +448,9 @@ Generates a complete HTML documentation page from route information.
 - `routes` - Array of route information from `collectRoutes()`
 - `options` - Optional configuration:
   - `title` - Page title (default: `'API Documentation'`)
+  - `defaultBaseURL` - Pre-fills the testing playground's Base URL (e.g.
+    `'http://localhost:3000/trpc'`), so consumers don't have to configure it manually. A base URL a
+    user explicitly saves in the config modal still takes precedence over this default.
   - `transformer` - Data transformer used by tRPC router (optional)
     - Set to `'superjson'` if your router uses the superjson transformer
     - This ensures the test playground correctly wraps requests/responses in `{json: ...}` format

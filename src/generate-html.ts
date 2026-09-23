@@ -10,7 +10,7 @@ import { generateSnippets } from './generate-snippets.js';
  * @returns HTML string
  */
 export function generateDocsHtml(routes: RouteInfo[], options: DocsGeneratorOptions = {}): string {
-  const { title = 'API Documentation', transformer } = options;
+  const { title = 'API Documentation', transformer, defaultBaseURL } = options;
   const groupedRoutes = groupRoutesByPrefix(routes);
 
   return `<!DOCTYPE html>
@@ -214,7 +214,9 @@ export function generateDocsHtml(routes: RouteInfo[], options: DocsGeneratorOpti
   <script>
     // tRPC transformer configuration
     window.TRPC_TRANSFORMER = ${transformer ? `'${transformer}'` : 'undefined'};
-    
+    // Fallback base URL when the user hasn't configured/saved one yet
+    window.TRPC_DEFAULT_BASE_URL = ${defaultBaseURL ? JSON.stringify(defaultBaseURL) : 'undefined'};
+
     ${getScripts()}
   </script>
 </body>

@@ -18,10 +18,16 @@ describe('intersection types', () => {
     expect(() => collectRoutes(router)).not.toThrow();
   });
 
-  test('intersection schema contains allOf', () => {
+  test("intersection schema merges both sides' fields", () => {
     const schema = inputSchema(collectRoutes(router), 'merged');
-    expect(schema.allOf).toBeDefined();
-    expect(Array.isArray(schema.allOf)).toBe(true);
+    // Zod v4.6+ folds a plain object & object intersection into one flat object schema
+    // instead of `allOf`. Accept either representation, but require both sides' fields.
+    if (schema.allOf) {
+      expect(Array.isArray(schema.allOf)).toBe(true);
+    } else {
+      expect(schema.properties).toHaveProperty('id');
+      expect(schema.properties).toHaveProperty('name');
+    }
   });
 
   test('intersection example has fields from both sides', () => {

@@ -32,4 +32,10 @@ export type DocsGeneratorOptions = {
    * This wraps requests/responses in {json: ...} format
    */
   transformer?: 'superjson';
+  /**
+   * Base URL to pre-fill the playground's "Base URL" config with (e.g. 'http://localhost:3000/trpc').
+   * Useful when the docs are only ever served from one known address, so consumers
+   * don't have to manually configure it. Users can still override it; their saved value always wins.
+   */
+  defaultBaseURL?: string;
 };

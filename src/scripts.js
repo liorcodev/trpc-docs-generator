@@ -161,8 +161,15 @@ window.addEventListener('load', () => {
 });
 
 // Configuration modal functions
+
+// A base URL explicitly saved by the user always wins; otherwise fall back to the
+// defaultBaseURL the docs were generated with (window.TRPC_DEFAULT_BASE_URL), if any.
+function getConfiguredBaseUrl() {
+  return localStorage.getItem('trpc-base-url') || window.TRPC_DEFAULT_BASE_URL || '';
+}
+
 function updateConfigButton() {
-  const baseUrl = localStorage.getItem('trpc-base-url');
+  const baseUrl = getConfiguredBaseUrl();
   const configButton = document.getElementById('configButton');
   const configButtonText = document.getElementById('configButtonText');
   const mobileConfigButton = document.getElementById('mobileConfigButton');
@@ -182,7 +189,7 @@ function openConfigModal() {
   const modal = document.getElementById('configModal');
   const input = document.getElementById('baseUrlInput');
 
-  input.value = localStorage.getItem('trpc-base-url') || '';
+  input.value = getConfiguredBaseUrl();
   modal.classList.add('active');
   setTimeout(() => input.focus(), 100);
 }
@@ -241,7 +248,7 @@ window.switchSnippetTab = function (tabName, btn) {
 
 // Substitute the {{BASE_URL}} placeholder in code snippets with the configured base URL
 function updateSnippetBaseUrls() {
-  const baseUrl = localStorage.getItem('trpc-base-url') || '{{BASE_URL}}';
+  const baseUrl = getConfiguredBaseUrl() || '{{BASE_URL}}';
   document.querySelectorAll('pre[data-base-url-template="true"]').forEach(pre => {
     if (pre.dataset.originalText === undefined) {
       pre.dataset.originalText = pre.textContent;
@@ -652,7 +659,7 @@ async function testEndpoint(routeId, path, type) {
   responseContainer.style.display = 'none';
 
   try {
-    const baseUrl = localStorage.getItem('trpc-base-url');
+    const baseUrl = getConfiguredBaseUrl();
 
     if (!baseUrl) {
       openConfigModal();
